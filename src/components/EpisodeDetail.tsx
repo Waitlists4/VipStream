@@ -57,7 +57,7 @@ const EpisodeDetail: React.FC = () => {
         const [showData, seasonData, episodeCredits] = await Promise.all([
           tmdb.getTVDetails(parseInt(id)),
           tmdb.getTVSeasons(parseInt(id), parseInt(seasonNumber)),
-          tmdb.getTVCredits(parseInt(id))  // Assuming you have this function in your tmdb service
+          tmdb.getTVEpisodeCredits(parseInt(id), parseInt(seasonNumber), parseInt(episodeNumber))  // Assuming you have this function in your tmdb service
         ]);
         
         const episodeData = seasonData.episodes?.find(

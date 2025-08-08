@@ -2,7 +2,7 @@
   "name": "lunastream-main",
   "author": "LunaStream",
   "private": true,
-  "version": "3.3.2",
+  "version": "3.3.2.1",
   "type": "module",
   "homepage": ".",
   "main": "app.cjs",
@@ -16,7 +16,8 @@
     "build:android": "npm run build && npx cap copy && cd android && gradlew assembleDebug",
     "electron": "electron .",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "android": "npx cap run android"
   },
   "dependencies": {
     "@capacitor/android": "^7.4.2",
