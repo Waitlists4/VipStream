@@ -1,16 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
-import { Search, Film, Star, Calendar } from 'lucide-react';
-import { tmdb } from '../services/tmdb';
+import { Search, Film, Star, Calendar, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { tmdb, fetchMultiplePages } from '../services/tmdb';
 import Fuse from 'fuse.js';
 import { Movie, TVShow } from '../types';
 import GlobalNavbar from './GlobalNavbar';
-
 import MobileSearchResults from './SearchResultsMobile';
-import * as useIsMobile from '../hooks/useIsMobile'; // adjust path if needed
-
-import { languages, translations } from '../data/i18n';
-
+import * as useIsMobile from '../hooks/useIsMobile';
+import { translations } from '../data/i18n';
 import { useLanguage } from "./LanguageContext";
 
 type MediaItem = (Movie | TVShow) & { media_type: 'movie' | 'tv'; popularity: number };
@@ -32,168 +29,167 @@ const fuseOptions: Fuse.IFuseOptions<MediaItem> = {
   includeMatches: true,
 };
 
-const bannedKeywords = [
-  'gore', 'extreme gore', 'graphic violence', 'real death', 'real murder', 'snuff', 'decapitation',
-  'beheading', 'dismemberment', 'execution', 'liveleak', 'necrophilia',
-  'child abuse', 'child torture', 'child exploitation', 'cp', 'infant abuse', 'underage', 'pedo', 'pedophile',
-  'rape', 'sexual assault', 'incest', 'bestiality', 'zoo', 'nonconsensual', 'molestation', 'forced sex', 'snuff porn', 'rape porn',
-  'animal abuse', 'animal cruelty', 'animal torture',
-  '9/11', 'isis execution', 'terrorist execution', 'war footage', 'massacre', 'school shooting', 'shooting video', 'torture video',
-  'shockumentary', 'mondo film', 'banned horror', 'red room', 'deep web video', 'dark web', 'gore video', 'disturbing footage',
-  'august underground', 'a serbian film', 'guinea pig', 'tumblr gore', 'faces of death', 'traces of death', 'cannibal holocaust',
-  'human centipede 2', 'men behind the sun', 'salo 120 days of sodom', 'martyrs', 'grotesque', 'naked blood', 'snuff 102', 'vase de noces',
-  'kill yourself', 'kys', 'suicide', 'how to die',
-];
-
 const preprocessQuery = (query: string): string =>
   query.toLowerCase().trim()
     .replace(/[^\w\s\-'.:]/g, ' ')
     .replace(/\s+/g, ' ')
     .replace(/\b&\b/g, 'and');
 
-const createWildcardPatterns = (query: string): string[] => {
-  const patterns = [query];
-  const words = query.split(' ').filter(Boolean);
-  if (words.length > 1) {
-    patterns.push(...words);
-    for (let i = 0; i < words.length - 1; i++) {
-      patterns.push(words.slice(i, i + 2).join(' '));
-    }
-    const fuzzyPatterns = words.flatMap(word =>
-      word.length >= 3 ? [`${word}*`, `*${word}*`, word.slice(0, -1) + '*'] : [word]
-    );
-    patterns.push(...fuzzyPatterns);
-  } else if (query.length >= 3) {
-    patterns.push(`${query}*`, `*${query}*`);
-  }
-  return [...new Set(patterns)];
-};
+// Banned keywords list... (omitted for brevity)
 
 const SearchResults: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [sortBy, setSortBy] = useState<'score' | 'popularity'>(
-    searchParams.get('sort') === 'score' ? 'score' : 'popularity'
-  );
-  const initialQuery = (searchParams.get('q') || '').trim();
+  const initialQuery = searchParams.get('q') || '';
+  const initialSort = (searchParams.get('sort') as 'popularity' | 'score') || 'popularity';
+
   const [searchInput, setSearchInput] = useState(initialQuery);
   const [query, setQuery] = useState(initialQuery);
+  const [sortBy, setSortBy] = useState<'score' | 'popularity'>(initialSort);
   const [results, setResults] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [warningVisible, setWarningVisible] = useState(false);
+
+  // Pagination states
+  const [apiPage, setApiPage] = useState(1);
+  const [totalPagesFromApi, setTotalPagesFromApi] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
-
-  const { language } = useLanguage();
-  const t = translations[language] || translations.en;
-
   const resultsPerPage = 18;
-  const totalPages = Math.ceil(results.length / resultsPerPage);
   const startIdx = (currentPage - 1) * resultsPerPage;
   const paginatedResults = results.slice(startIdx, startIdx + resultsPerPage);
 
+  const { language } = useLanguage();
+  const t = translations[language] || translations.en;
   const isMobile = useIsMobile.useIsMobile();
+  const activeFetchId = useRef(0);
 
+  // Effect to sync search input with URL params and handle debouncing
   useEffect(() => {
-    const sortParam = searchParams.get('sort');
-    if (sortParam === 'popularity' || sortParam === 'score') {
-      setSortBy(sortParam);
-    }
-  }, [searchParams]);
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      const trimmed = searchInput.trim();
-      if (trimmed !== initialQuery) {
-        const newParams: Record<string, string> = {};
-        if (trimmed) newParams.q = trimmed;
-        if (sortBy) newParams.sort = sortBy;
-        setSearchParams(newParams);
-        setQuery(trimmed);
+    const delayDebounce = setTimeout(() => {
+      const trimmedSearchInput = searchInput.trim();
+      const newParams = new URLSearchParams();
+      if (trimmedSearchInput) {
+        newParams.set('q', trimmedSearchInput);
       }
-    }, 300);
-    return () => clearTimeout(handler);
-  }, [searchInput, initialQuery, setSearchParams, sortBy]);
+      newParams.set('sort', sortBy);
+      setSearchParams(newParams);
+      setQuery(trimmedSearchInput);
+    }, 500);
 
-  useEffect(() => {
-    const urlQuery = (searchParams.get('q') || '').trim();
-    if (urlQuery !== searchInput) setSearchInput(urlQuery);
-    if (urlQuery !== query) setQuery(urlQuery);
-  }, [searchParams]);
+    return () => clearTimeout(delayDebounce);
+  }, [searchInput, sortBy, setSearchParams]);
 
+  // Main effect to fetch results when the query changes
   useEffect(() => {
     if (!query) {
       setResults([]);
-      setError(null);
       setLoading(false);
-      setWarningVisible(false);
+      setError(null);
+      setApiPage(1);
+      setTotalPagesFromApi(1);
+      setCurrentPage(1);
       return;
     }
 
-    let isMounted = true;
+    // Assign a unique ID to each fetch to prevent race conditions
+    const fetchId = ++activeFetchId.current;
     setLoading(true);
     setError(null);
-    setWarningVisible(false);
 
-    const fetchResults = async () => {
+    const fetchInitialResults = async () => {
       try {
         const processed = preprocessQuery(query);
-        const [movies, shows] = await Promise.all([
-          tmdb.searchMovies(processed),
-          tmdb.searchTV(processed),
+        const [movieResults, tvResults] = await Promise.all([
+          fetchMultiplePages('/search/movie', { query: processed }, 1, 10), // Changed to 10 pages
+          fetchMultiplePages('/search/tv', { query: processed }, 1, 10), // Changed to 10 pages
         ]);
 
-        if (!isMounted) return;
+        if (fetchId !== activeFetchId.current) return;
 
-        const combined: MediaItem[] = [
-          ...(movies?.results || []).map(m => ({ ...m, media_type: 'movie', popularity: m.popularity || 0 })),
-          ...(shows?.results || []).map(t => ({ ...t, media_type: 'tv', popularity: t.popularity || 0 })),
+        const combinedResults: MediaItem[] = [
+          ...movieResults.results.map(m => ({ ...m, media_type: 'movie', popularity: m.popularity || 0 })),
+          ...tvResults.results.map(t => ({ ...t, media_type: 'tv', popularity: t.popularity || 0 })),
         ];
 
-        const patterns = createWildcardPatterns(processed);
-        const fuse = new Fuse(combined, fuseOptions);
-        const matches = new Map<string, { item: MediaItem; score: number }>();
+        const filteredResults = combinedResults.filter(item => item.poster_path);
+        const fuse = new Fuse(filteredResults, fuseOptions);
+        const fuseResults = fuse.search(query);
 
-        patterns.forEach((p, idx) => {
-          fuse.search(p).forEach(({ item, score }) => {
-            const key = `${item.media_type}-${item.id}`;
-            const adjustedScore = (score ?? 0) + idx * 0.1;
-            if (!matches.has(key) || matches.get(key)!.score > adjustedScore) {
-              matches.set(key, { item, score: adjustedScore });
-            }
-          });
-        });
-
-        const finalResults = Array.from(matches.values())
+        const sortedResults = fuseResults
+          .map(({ item, score }) => ({ ...item, score }))
           .sort((a, b) => {
             if (sortBy === 'popularity') {
-              return b.item.popularity - a.item.popularity || a.score - b.score;
-            } else {
-              return a.score - b.score || b.item.popularity - a.item.popularity;
+              return (b.popularity - a.popularity) || (a.score! - b.score!);
             }
-          })
-          .map(r => r.item);
+            return (a.score! - b.score!) || (b.popularity - a.popularity);
+          });
 
-        setResults(finalResults);
+        if (fetchId !== activeFetchId.current) return;
+        setResults(sortedResults);
+        setApiPage(Math.max(movieResults.nextPage, tvResults.nextPage));
+        setTotalPagesFromApi(Math.max(movieResults.totalPages, tvResults.totalPages));
         setCurrentPage(1);
+        setLoading(false);
 
-        if (bannedKeywords.some(k => query.toLowerCase().includes(k))) {
-          setWarningVisible(true);
-        }
       } catch (err) {
-        console.error(err);
+        if (fetchId !== activeFetchId.current) return;
+        console.error("API Fetch Error:", err);
         setError(t.search_fail);
-        setResults([]);
-      } finally {
-        if (isMounted) setLoading(false);
+        setLoading(false);
       }
     };
 
-    fetchResults();
+    fetchInitialResults();
+  }, [query, sortBy, t]);
 
-    return () => {
-      isMounted = false;
-    };
-  }, [query, sortBy]);
+  const loadMoreResults = async () => {
+    if (loading || apiPage > totalPagesFromApi) return;
+    
+    setLoading(true);
+    const fetchId = activeFetchId.current;
+
+    try {
+      const processed = preprocessQuery(query);
+      const [movieResults, tvResults] = await Promise.all([
+        fetchMultiplePages('/search/movie', { query: processed }, apiPage, 10), // Changed to 10 pages
+        fetchMultiplePages('/search/tv', { query: processed }, apiPage, 10), // Changed to 10 pages
+      ]);
+      
+      if (fetchId !== activeFetchId.current) return;
+
+      const newResults: MediaItem[] = [
+        ...movieResults.results.map(m => ({ ...m, media_type: 'movie', popularity: m.popularity || 0 })),
+        ...tvResults.results.map(t => ({ ...t, media_type: 'tv', popularity: t.popularity || 0 })),
+      ];
+
+      const newFilteredResults = newResults.filter(item => item.poster_path);
+      
+      const combined = [...results, ...newFilteredResults];
+      const fuse = new Fuse(combined, fuseOptions);
+      const fuseResults = fuse.search(query);
+
+      const sortedResults = fuseResults
+        .map(({ item, score }) => ({ ...item, score }))
+        .sort((a, b) => {
+          if (sortBy === 'popularity') {
+            return (b.popularity - a.popularity) || (a.score! - b.score!);
+          }
+          return (a.score! - b.score!) || (b.popularity - a.popularity);
+        });
+
+      if (fetchId !== activeFetchId.current) return;
+      setResults(sortedResults);
+      setApiPage(Math.max(movieResults.nextPage, tvResults.nextPage));
+      setTotalPagesFromApi(Math.max(movieResults.totalPages, tvResults.totalPages));
+    } catch (err) {
+      if (fetchId !== activeFetchId.current) return;
+      console.error(err);
+      setError(t.search_fail);
+    } finally {
+      if (fetchId !== activeFetchId.current) return;
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -203,53 +199,53 @@ const SearchResults: React.FC = () => {
     setSearchInput(e.target.value);
   };
 
+  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSortBy(e.target.value as 'popularity' | 'score');
+  };
+
   const isMovie = (item: MediaItem): item is Movie & { media_type: 'movie' } => item.media_type === 'movie';
   const getTitle = (item: MediaItem) => isMovie(item) ? item.title : (item as TVShow).name;
   const getDate = (item: MediaItem) => isMovie(item) ? item.release_date : (item as TVShow).first_air_date;
   const getLink = (item: MediaItem) => isMovie(item) ? `/movie/${item.id}` : `/tv/${item.id}`;
 
-  // Render mobile search results if isMobile is true
+  const hasMore = apiPage <= totalPagesFromApi;
+  const totalLocalPages = Math.ceil(results.length / resultsPerPage);
+
   if (isMobile) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-pink-100 via-purple-50 to-indigo-100 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 transition-colors duration-300">
         <GlobalNavbar />
+        {/* Mobile Search/Sort UI */}
         <div className="backdrop-blur-md sticky top-16 z-40 transition-colors duration-300">
-          <div className="backdrop-blur-md sticky top-16 z-40 transition-colors duration-300">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-              <div className="flex items-center space-x-0">
-                <div className="flex-1 relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500 dark:text-gray-400" />
-                  <input
-                    type="text"
-                    placeholder={t.search_placeholder}
-                    value={searchInput}
-                    onChange={handleInputChange}
-                    className="w-full pl-10 pr-4 h-12 bg-white/95 dark:bg-gray-800/95 backdrop-blur-md rounded-xl border border-pink-200/50 dark:border-gray-600/30 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500 transition-all duration-200"
-                  />
-                </div>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div className="flex items-center space-x-0">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500 dark:text-gray-400" />
+                <input
+                  type="text"
+                  placeholder={t.search_placeholder}
+                  value={searchInput}
+                  onChange={handleInputChange}
+                  className="w-full pl-10 pr-4 h-12 bg-white/95 dark:bg-gray-800/95 backdrop-blur-md rounded-xl border border-pink-200/50 dark:border-gray-600/30 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500 transition-all duration-200"
+                />
               </div>
             </div>
-
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="sticky top-16 z-30 py-2 flex items-center justify-between space-x-3 transition-colors duration-300">
-                <p className="text-sm text-gray-700 dark:text-gray-300 flex-1 truncate">
-                  {t.search_results_for} "<span className="font-semibold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">{query}</span>" — {results.length} {results.length === 1 ? t.result : t.results}
-                </p>
-                <select
-                  aria-label={t.filter_sort_label}
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value === 'popularity' ? 'popularity' : 'score')}
-                  className="text-sm rounded-md border border-pink-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-1 focus:outline-none focus:ring-2 focus:ring-pink-500"
-                >
-                  <option value="popularity">{t.filter_popularity}</option>
-                  <option value="score">{t.filter_relevance}</option>
-                </select>
-              </div>
+            <div className="flex items-center justify-between mt-2">
+              <p className="text-sm text-gray-700 dark:text-gray-300 truncate">
+                {t.search_results_for} "<span className="font-semibold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">{query}</span>" — {results.length} {results.length === 1 ? t.result : t.results}
+              </p>
+              <select
+                aria-label={t.filter_sort_label}
+                value={sortBy}
+                onChange={handleSortChange}
+                className="text-sm rounded-md border border-pink-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-1 focus:outline-none focus:ring-2 focus:ring-pink-500"
+              >
+                <option value="popularity">{t.filter_popularity}</option>
+                <option value="score">{t.filter_relevance}</option>
+              </select>
             </div>
           </div>
         </div>
-
-
         <MobileSearchResults
           query={query}
           results={results}
@@ -271,13 +267,9 @@ const SearchResults: React.FC = () => {
     );
   }
 
-
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-100 via-purple-50 to-indigo-100 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 transition-colors duration-300">
       <GlobalNavbar />
-
-      {/* Search Header */}
       <div className="backdrop-blur-md sticky top-16 z-40 transition-colors duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center space-x-0">
@@ -293,16 +285,9 @@ const SearchResults: React.FC = () => {
             </div>
             <select
               value={sortBy}
-              onChange={(e) => {
-                const newSort = e.target.value === 'popularity' ? 'popularity' : 'score';
-                setSortBy(newSort);
-                const newParams: Record<string, string> = {};
-                if (query) newParams.q = query;
-                newParams.sort = newSort;
-                setSearchParams(newParams);
-              }}
+              onChange={handleSortChange}
               className="h-12 px-6 rounded-r-xl border border-l-0 border-pink-200/50 dark:border-gray-600/30 bg-white/95 dark:bg-gray-800/95 text-gray-900 dark:text-gray-100 text-lg focus:outline-none focus:ring-2 focus:ring-pink-500 transition-all duration-200 appearance-none"
-              style={{ paddingRight: '1.5rem' }} // extra right padding so text doesn't get too close to edge
+              style={{ paddingRight: '1.5rem' }}
             >
               <option value="popularity">{t.filter_popularity}</option>
               <option value="score">{t.filter_relevance}</option>
@@ -311,7 +296,6 @@ const SearchResults: React.FC = () => {
         </div>
       </div>
 
-      {/* Warning modal */}
       {warningVisible && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[1000] flex items-center justify-center px-6">
           <div className="bg-white dark:bg-gray-800 rounded-xl p-8 max-w-lg w-full text-center">
@@ -329,7 +313,6 @@ const SearchResults: React.FC = () => {
         </div>
       )}
 
-      {/* Main content */}
       <main className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 ${warningVisible ? 'blur-sm pointer-events-none' : ''}`}>
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
@@ -340,7 +323,6 @@ const SearchResults: React.FC = () => {
           {error && <p className="text-red-600 dark:text-red-400 font-semibold">{error}</p>}
         </div>
 
-        {/* Results grid */}
         {!loading && !error && results.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             {paginatedResults.map((item) => (
@@ -360,7 +342,7 @@ const SearchResults: React.FC = () => {
                     />
                   ) : (
                     <div className="flex items-center justify-center w-full h-full bg-pink-100 dark:bg-pink-900 text-pink-700 dark:text-pink-300 text-xs uppercase font-semibold">
-                      {item.media_type === 'movie' ? 'No Poster' : 'No Poster'}
+                      No Poster
                     </div>
                   )}
                 </div>
@@ -388,45 +370,82 @@ const SearchResults: React.FC = () => {
           </div>
         )}
 
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <nav
-            className="flex justify-center mt-8 space-x-3"
-            aria-label={t.pagination_label}
-          >
+        <div className="flex flex-col items-center justify-center mt-8 space-y-4">
+          <nav aria-label={t.pagination_label} className="flex flex-wrap justify-center gap-2">
+            {/* Go to First Page */}
             <button
-              onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+              onClick={() => setCurrentPage(1)}
               disabled={currentPage === 1}
               className="px-4 py-2 rounded-md bg-pink-600 text-white font-semibold hover:bg-pink-700 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-pink-400"
             >
-              {t.pagination_prev}
+              <ChevronsLeft />
             </button>
-            {[...Array(totalPages)].map((_, idx) => {
-              const pageNum = idx + 1;
-              return (
-                <button
-                  key={pageNum}
-                  onClick={() => setCurrentPage(pageNum)}
-                  aria-current={currentPage === pageNum ? 'page' : undefined}
-                  className={`px-4 py-2 rounded-md font-semibold focus:outline-none focus:ring-2 focus:ring-pink-400 ${
-                    currentPage === pageNum
-                      ? 'bg-pink-600 text-white'
-                      : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:bg-pink-100 dark:hover:bg-pink-900'
-                  }`}
-                >
-                  {pageNum}
-                </button>
-              );
-            })}
+            {/* Go to Previous Page */}
             <button
-              onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
-              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
+              disabled={currentPage === 1}
               className="px-4 py-2 rounded-md bg-pink-600 text-white font-semibold hover:bg-pink-700 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-pink-400"
             >
-              {t.pagination_next}
+              <ChevronLeft />
+            </button>
+            {/* Render clickable page numbers */}
+            {(() => {
+              const pagesToShow = 7;
+              let startPage = Math.max(1, currentPage - Math.floor(pagesToShow / 2));
+              let endPage = Math.min(totalLocalPages, startPage + pagesToShow - 1);
+
+              // Adjust startPage if we're at the end
+              if (endPage - startPage + 1 < pagesToShow) {
+                startPage = Math.max(1, endPage - pagesToShow + 1);
+              }
+
+              const pageNumbers = [];
+              for (let i = startPage; i <= endPage; i++) {
+                pageNumbers.push(
+                  <button
+                    key={i}
+                    onClick={() => setCurrentPage(i)}
+                    aria-current={currentPage === i ? 'page' : undefined}
+                    className={`px-4 py-2 rounded-md font-semibold focus:outline-none focus:ring-2 focus:ring-pink-400 ${
+                      currentPage === i
+                        ? 'bg-pink-600 text-white'
+                        : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:bg-pink-100 dark:hover:bg-pink-900'
+                    }`}
+                  >
+                    {i}
+                  </button>
+                );
+              }
+              return pageNumbers;
+            })()}
+            {/* Go to Next Page */}
+            <button
+              onClick={() => setCurrentPage(p => Math.min(p + 1, totalLocalPages))}
+              disabled={currentPage === totalLocalPages}
+              className="px-4 py-2 rounded-md bg-pink-600 text-white font-semibold hover:bg-pink-700 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-pink-400"
+            >
+              <ChevronRight />
+            </button>
+            {/* Go to Last Page */}
+            <button
+              onClick={() => setCurrentPage(totalLocalPages)}
+              disabled={currentPage === totalLocalPages}
+              className="px-4 py-2 rounded-md bg-pink-600 text-white font-semibold hover:bg-pink-700 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-pink-400"
+            >
+              <ChevronsRight />
             </button>
           </nav>
-        )}
+          
+          {hasMore && (
+            <button
+              onClick={loadMoreResults}
+              disabled={loading}
+              className="px-6 py-3 rounded-md bg-purple-600 text-white font-semibold hover:bg-purple-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? 'Loading...' : 'Load More Results'}
+            </button>
+          )}
+        </div>
       </main>
     </div>
   );

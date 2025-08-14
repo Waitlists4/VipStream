@@ -143,3 +143,33 @@ export const tmdb = {
     return response.json();
   }
 };
+
+export async function fetchMultiplePages(
+  endpoint,
+  params = {},
+  startPage = 1,
+  pagesToFetch = 10
+) {
+  const results = [];
+  // Fetch total pages info from first page
+  const firstResponse = await fetch(`${BASE_URL}${endpoint}?api_key=${API_KEY}&${new URLSearchParams({ ...params, page: '1' })}`);
+  const firstData = await firstResponse.json();
+  const totalPagesAvailable = firstData.total_pages || 1;
+
+  let currentPage = startPage;
+  for (let i = 0; i < pagesToFetch && currentPage <= totalPagesAvailable; i++, currentPage++) {
+    const response = await fetch(
+      `${BASE_URL}${endpoint}?api_key=${API_KEY}&${new URLSearchParams({ ...params, page: currentPage.toString() })}`
+    );
+    const data = await response.json();
+    if (data.results) {
+      results.push(...data.results);
+    }
+  }
+
+  return {
+    results,
+    nextPage: currentPage, // page after last fetched
+    totalPages: totalPagesAvailable,
+  };
+}

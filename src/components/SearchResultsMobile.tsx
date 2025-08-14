@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Star, Calendar, Film } from 'lucide-react';
+import { Star, Calendar, Film, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react'; // <-- Added new icons
 import { Movie, TVShow } from '../types';
 
 type MediaItem = (Movie | TVShow) & { media_type: 'movie' | 'tv'; popularity: number };
@@ -18,6 +18,9 @@ type MobileSearchResultsProps = {
   setCurrentPage: (page: number) => void;
   resultsPerPage: number;
   t: any;
+  // New props for loading more
+  loadMoreResults: () => void;
+  hasMore: boolean;
 };
 
 const isMovie = (item: MediaItem): item is Movie & { media_type: 'movie' } => item.media_type === 'movie';
@@ -38,8 +41,10 @@ const SearchResultsMobile: React.FC<MobileSearchResultsProps> = ({
   setCurrentPage,
   resultsPerPage,
   t,
+  loadMoreResults,
+  hasMore,
 }) => {
-  const totalPages = Math.ceil(results.length / resultsPerPage);
+  const totalLocalPages = Math.ceil(results.length / resultsPerPage);
   const startIdx = (currentPage - 1) * resultsPerPage;
   const paginatedResults = results.slice(startIdx, startIdx + resultsPerPage);
 
@@ -130,46 +135,86 @@ const SearchResultsMobile: React.FC<MobileSearchResultsProps> = ({
         </ul>
       )}
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <nav
-          className="flex justify-center mt-6 space-x-3"
-          aria-label={t.pagination_label}
-        >
-          <button
-            onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-            disabled={currentPage === 1}
-            className="px-4 py-2 rounded-md bg-pink-600 text-white font-semibold hover:bg-pink-700 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-pink-400"
-          >
-            {t.pagination_prev}
-          </button>
-          {[...Array(totalPages)].map((_, idx) => {
-            const pageNum = idx + 1;
-            return (
-              <button
-                key={pageNum}
-                onClick={() => setCurrentPage(pageNum)}
-                aria-current={currentPage === pageNum ? 'page' : undefined}
-                className={`px-4 py-2 rounded-md font-semibold focus:outline-none focus:ring-2 focus:ring-pink-400 ${
-                  currentPage === pageNum
-                    ? 'bg-pink-600 text-white'
-                    : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:bg-pink-100 dark:hover:bg-pink-900'
-                }`}
-              >
-                {pageNum}
-              </button>
-            );
-          })}
-          <button
-            onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
-            disabled={currentPage === totalPages}
-            className="px-4 py-2 rounded-md bg-pink-600 text-white font-semibold hover:bg-pink-700 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-pink-400"
-          >
-            {t.pagination_next}
-          </button>
-        </nav>
-      )}
+      {/* Pagination and Load More Button */}
+      {(totalLocalPages > 1 || hasMore) && (
+        <div className="flex flex-col items-center justify-center mt-8 space-y-4">
+          <nav aria-label={t.pagination_label} className="flex flex-wrap justify-center gap-2">
+            {/* Go to First Page */}
+            <button
+              onClick={() => setCurrentPage(1)}
+              disabled={currentPage === 1}
+              className="px-4 py-2 rounded-md bg-pink-600 text-white font-semibold hover:bg-pink-700 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-pink-400"
+            >
+              <ChevronsLeft />
+            </button>
+            {/* Go to Previous Page */}
+            <button
+              onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
+              disabled={currentPage === 1}
+              className="px-4 py-2 rounded-md bg-pink-600 text-white font-semibold hover:bg-pink-700 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-pink-400"
+            >
+              <ChevronLeft />
+            </button>
+            {/* Render clickable page numbers */}
+            {(() => {
+              const pagesToShow = 7;
+              let startPage = Math.max(1, currentPage - Math.floor(pagesToShow / 2));
+              let endPage = Math.min(totalLocalPages, startPage + pagesToShow - 1);
 
+              // Adjust startPage if we're at the end
+              if (endPage - startPage + 1 < pagesToShow) {
+                startPage = Math.max(1, endPage - pagesToShow + 1);
+              }
+
+              const pageNumbers = [];
+              for (let i = startPage; i <= endPage; i++) {
+                pageNumbers.push(
+                  <button
+                    key={i}
+                    onClick={() => setCurrentPage(i)}
+                    aria-current={currentPage === i ? 'page' : undefined}
+                    className={`px-4 py-2 rounded-md font-semibold focus:outline-none focus:ring-2 focus:ring-pink-400 ${
+                      currentPage === i
+                        ? 'bg-pink-600 text-white'
+                        : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:bg-pink-100 dark:hover:bg-pink-900'
+                    }`}
+                  >
+                    {i}
+                  </button>
+                );
+              }
+              return pageNumbers;
+            })()}
+            {/* Go to Next Page */}
+            <button
+              onClick={() => setCurrentPage(p => Math.min(p + 1, totalLocalPages))}
+              disabled={currentPage === totalLocalPages}
+              className="px-4 py-2 rounded-md bg-pink-600 text-white font-semibold hover:bg-pink-700 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-pink-400"
+            >
+              <ChevronRight />
+            </button>
+            {/* Go to Last Page */}
+            <button
+              onClick={() => setCurrentPage(totalLocalPages)}
+              disabled={currentPage === totalLocalPages}
+              className="px-4 py-2 rounded-md bg-pink-600 text-white font-semibold hover:bg-pink-700 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-pink-400"
+            >
+              <ChevronsRight />
+            </button>
+          </nav>
+
+          {hasMore && (
+            <button
+              onClick={loadMoreResults}
+              disabled={loading}
+              className="px-6 py-3 rounded-md bg-purple-600 text-white font-semibold hover:bg-purple-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? 'Loading...' : 'Load More Results'}
+            </button>
+          )}
+        </div>
+      )}
+      
       {/* No results */}
       {!loading && !error && results.length === 0 && (
         <p className="mt-12 text-center text-gray-600 dark:text-gray-400">
