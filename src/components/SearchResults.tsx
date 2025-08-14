@@ -184,7 +184,7 @@ const SearchResults: React.FC = () => {
         });
         const results = fuse.search(processed).map(r => r.item);
 
-        setSearchResults(results);
+        setResults(results);
       } catch (error) {
         console.error('Error fetching search results:', error);
       }
