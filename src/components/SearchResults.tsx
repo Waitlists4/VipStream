@@ -137,59 +137,56 @@ const SearchResults: React.FC = () => {
     const fetchResults = async () => {
       try {
         const processed = preprocessQuery(query);
-
-        // helper to fetch every available page
-        const getAllPages = async (
-          searchFn: (q: string, page?: number) => Promise<any>
-        ) => {
-          let allResults: any[] = [];
-          let page = 1;
-          let totalPages = 1;
-
-          while (page <= totalPages) {
-            const res = await searchFn(processed, page);
-            if (!res?.results?.length) break;
-
-            allResults.push(...res.results);
-
-            totalPages = res.total_pages || 1;
-            page++;
-          }
-          return allResults;
-        };
-
-        // fetch all pages from both endpoints
         const [movies, shows] = await Promise.all([
-          getAllPages(tmdb.searchMovies),
-          getAllPages(tmdb.searchTV),
+          tmdb.searchMovies(processed),
+          tmdb.searchTV(processed),
         ]);
 
+        if (!isMounted) return;
+
         const combined: MediaItem[] = [
-          ...movies.map(m => ({
-            ...m,
-            media_type: 'movie',
-            popularity: m.popularity || 0,
-          })),
-          ...shows.map(t => ({
-            ...t,
-            media_type: 'tv',
-            popularity: t.popularity || 0,
-          })),
+          ...(movies?.results || []).map(m => ({ ...m, media_type: 'movie', popularity: m.popularity || 0 })),
+          ...(shows?.results || []).map(t => ({ ...t, media_type: 'tv', popularity: t.popularity || 0 })),
         ];
 
-        // Fuse.js search
-        const fuse = new Fuse(combined, {
-          keys: ['title', 'name'],
-          threshold: 0.4,
-        });
-        const results = fuse.search(processed).map(r => r.item);
+        const patterns = createWildcardPatterns(processed);
+        const fuse = new Fuse(combined, fuseOptions);
+        const matches = new Map<string, { item: MediaItem; score: number }>();
 
-        setResults(results);
-      } catch (error) {
-        console.error('Error fetching search results:', error);
+        patterns.forEach((p, idx) => {
+          fuse.search(p).forEach(({ item, score }) => {
+            const key = `${item.media_type}-${item.id}`;
+            const adjustedScore = (score ?? 0) + idx * 0.1;
+            if (!matches.has(key) || matches.get(key)!.score > adjustedScore) {
+              matches.set(key, { item, score: adjustedScore });
+            }
+          });
+        });
+
+        const finalResults = Array.from(matches.values())
+          .sort((a, b) => {
+            if (sortBy === 'popularity') {
+              return b.item.popularity - a.item.popularity || a.score - b.score;
+            } else {
+              return a.score - b.score || b.item.popularity - a.item.popularity;
+            }
+          })
+          .map(r => r.item);
+
+        setResults(finalResults);
+        setCurrentPage(1);
+
+        if (bannedKeywords.some(k => query.toLowerCase().includes(k))) {
+          setWarningVisible(true);
+        }
+      } catch (err) {
+        console.error(err);
+        setError(t.search_fail);
+        setResults([]);
+      } finally {
+        if (isMounted) setLoading(false);
       }
     };
-
 
     fetchResults();
 
