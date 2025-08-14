@@ -143,13 +143,14 @@ const HomepageMobile: React.FC = () => {
                 <li
                   key={item.id}
                   className="flex items-center px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
-                  onClick={() => onSearch(isMovie(item) ? item.title : item.name)}
+                  onClick={() => navigate(`/${item.media_type}/${item.id}`)}
                 >
                   {item.poster_path ? (
                     <img
                       src={`https://image.tmdb.org/t/p/w92${item.poster_path}`}
                       alt={isMovie(item) ? item.title : item.name}
                       className="w-10 h-14 object-cover rounded mr-3"
+                      loading="lazy"
                     />
                   ) : (
                     <div className="w-10 h-14 bg-gray-300 dark:bg-gray-700 rounded mr-3 flex items-center justify-center text-xs text-gray-500 dark:text-gray-300">
