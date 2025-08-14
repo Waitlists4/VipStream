@@ -126,10 +126,15 @@ const HybridTVHeader: React.FC<HybridTVHeaderProps> = ({
           {/* Poster */}
           <div className="flex-shrink-0">
             <div className="relative group">
-              <img
-                src={tmdb.getImageUrl(displayData.poster, "w500") || "/placeholder.svg"}
-                alt={displayData.title}
-                className="w-48 h-72 md:w-64 md:h-96 object-cover rounded-xl shadow-2xl transition-transform group-hover:scale-105"
+              <div
+                style={{
+                  backgroundImage: displayData.poster
+                    ? `url(${tmdb.getImageUrl(displayData.poster, "w500")})`
+                    : 'linear-gradient(to bottom, rgb(219 39 119), rgb(147 51 234))',
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center'
+                }}
+                className="w-48 h-72 md:w-64 md:h-96 rounded-xl shadow-2xl transition-transform group-hover:scale-105"
               />
               {displayData.type === 'season' && (
                 <div className="absolute top-2 left-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white px-3 py-1 rounded-full text-sm font-semibold">

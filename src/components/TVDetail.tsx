@@ -444,14 +444,18 @@ const TVDetail: React.FC = () => {
               (seasonCast.length > 0 ? seasonCast : cast).slice(0, 12).map((actor: any) => (
                 <div key={actor.id} className="flex-shrink-0 w-28 text-center">
                   <img
-                    src={
-                      actor.profile_path
-                        ? tmdb.getImageUrl(actor.profile_path, "w185")
-                        : "/placeholder-avatar.png"
-                    }
-                    alt={actor.name}
-                    className="w-28 h-28 object-cover rounded-full shadow-md mb-2 border border-gray-300 dark:border-gray-600"
-                  />
+                    src={
+                      actor.profile_path
+                        ? tmdb.getImageUrl(actor.profile_path, "w185")
+                        : (() => {
+                            if (actor.gender === 1) return "/female.png"
+                            if (actor.gender === 2) return "/male.png"
+                            return "/unknown.png"
+                          })()
+                    }
+                    alt={actor.name}
+                    className="w-28 h-28 object-cover rounded-full shadow-md mb-2 border border-gray-300 dark:border-gray-600"
+                  />
                   <p className="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">{actor.name}</p>
                   <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{actor.character}</p>
                 </div>

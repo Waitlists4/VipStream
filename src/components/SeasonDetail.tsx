@@ -302,25 +302,42 @@ const SeasonDetail: React.FC = () => {
             </h3>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-              {seasonCast.slice(0, 10).map((castMember) => (
-                <div key={castMember.id} className="flex flex-col items-center text-center">
-                  <img
-                    src={
-                      castMember.profile_path
-                        ? tmdb.getImageUrl(castMember.profile_path, 'w185')
-                        : '/placeholder-profile.png'
-                    }
-                    alt={castMember.name}
-                    className="w-24 h-24 rounded-full object-cover mb-2 border-2 border-pink-300"
-                  />
-                  <p className="text-sm font-semibold text-gray-900 dark:text-white truncate w-full">
-                    {castMember.name}
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 truncate w-full">
-                    {castMember.character}
-                  </p>
+              {seasonCast.length === 0 ? (
+                <p className="text-gray-700 dark:text-gray-300">
+                  {t.status_no_cast_info || "No cast information available."}
+                </p>
+              ) : (
+                <div className="flex flex-wrap gap-6 justify-start">
+                  {seasonCast.slice(0, 12).map((castMember) => {
+                    // Determine profile image with gender fallback
+                    const profileImage = castMember.profile_path
+                      ? tmdb.getImageUrl(castMember.profile_path, "w185")
+                      : castMember.gender === 1
+                      ? "/female.png"
+                      : castMember.gender === 2
+                      ? "/male.png"
+                      : "/unknown.png";
+
+                    return (
+                      <div key={castMember.id} className="w-28 text-center">
+                        <img
+                          src={profileImage}
+                          alt={castMember.name}
+                          className="w-28 h-28 object-cover rounded-full shadow-sm mb-2 border border-gray-300 dark:border-gray-600"
+                        />
+                        <p className="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">
+                          {castMember.name}
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                          {castMember.character}
+                        </p>
+                      </div>
+                    );
+                  })}
                 </div>
-              ))}
+              )}
+
+
             </div>
           </div>
         )}

@@ -28,6 +28,7 @@ interface CastMember {
   name: string;
   character: string;
   profile_path: string | null;
+  gender?: number; // add optional gender property
 }
 
 const EpisodeDetail: React.FC = () => {
@@ -81,6 +82,25 @@ const EpisodeDetail: React.FC = () => {
 
     fetchData();
   }, [id, seasonNumber, episodeNumber]);
+
+  useEffect(() => {
+    const fetchCastDetails = async () => {
+      if (!cast.length) return;
+      const castWithGender = await Promise.all(
+        cast.map(async (member) => {
+          try {
+            const personDetails = await tmdb.getPersonDetails(member.id);
+            return { ...member, gender: personDetails.gender };
+          } catch (err) {
+            console.error('Error fetching person details', err);
+            return member;
+          }
+        })
+      );
+      setCast(castWithGender);
+    };
+    fetchCastDetails();
+  }, [cast]);
 
   const handleWatchEpisode = () => {
     if (!show || !episode || !id) return;
@@ -157,7 +177,7 @@ const EpisodeDetail: React.FC = () => {
 
   if (isPlaying) {
     return (
-<div className="fixed inset-0 bg-black z-50">
+        <div className="fixed inset-0 bg-black z-50">
           {/* Close button */}
           <div className="absolute top-6 right-6 z-10">
             <button
@@ -308,17 +328,19 @@ const EpisodeDetail: React.FC = () => {
                 <div className="flex flex-wrap gap-4 overflow-x-auto">
                   {cast.slice(0, 12).map((member) => (
                     <div key={member.id} className="w-20 text-center">
-                      {member.profile_path ? (
-                        <img
-                          src={tmdb.getImageUrl(member.profile_path, 'w185')}
-                          alt={member.name}
-                          className="w-20 h-28 rounded-lg object-cover mb-1"
-                        />
-                      ) : (
-                        <div className="w-20 h-28 bg-gray-300 dark:bg-gray-700 rounded-lg mb-1 flex items-center justify-center text-xs text-gray-600 dark:text-gray-400">
-                          No Image
-                        </div>
-                      )}
+                      <img
+                        src={
+                          member.profile_path
+                            ? tmdb.getImageUrl(member.profile_path, 'w185')
+                            : (() => {
+                                if (member.gender === 1) return "/female.png"
+                                if (member.gender === 2) return "/male.png"
+                                return "/unknown.png"
+                              })()
+                        }
+                        alt={member.name}
+                        className="w-20 h-28 rounded-lg object-cover mb-1"
+                      />
                       <div className="text-xs font-semibold text-gray-900 dark:text-white truncate">
                         {member.name}
                       </div>

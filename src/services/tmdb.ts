@@ -122,5 +122,24 @@ export const tmdb = {
     if (!path)
       return 'https://images.pexels.com/photos/7991579/pexels-photo-7991579.jpeg?auto=compress&cs=tinysrgb&w=500&h=750&fit=crop';
     return `https://image.tmdb.org/t/p/${size}${path}`;
+  },
+
+  getPersonGender: async (id: number) => {
+    const response = await fetch(`${BASE_URL}/person/${id}?api_key=${API_KEY}`);
+    const data = await response.json();
+
+    switch (data.gender) {
+      case 1:
+        return 'female';
+      case 2:
+        return 'male';
+      default:
+        return 'unknown';
+    }
+  },
+
+  getPersonDetails: async (id: number) => {
+    const response = await fetch(`${BASE_URL}/person/${id}?api_key=${API_KEY}`);
+    return response.json();
   }
 };

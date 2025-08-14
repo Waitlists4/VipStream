@@ -75,17 +75,27 @@ const MovieDetail: React.FC = () => {
     if (!movie?.id) return
     const fetchCredits = async () => {
       try {
-        setLoading(true)
-        const credits = await tmdb.getMovieCredits(movie.id)
-        setCast(credits.cast || [])
+        setLoading(true);
+        const credits = await tmdb.getMovieCredits(movie.id);
+
+        // Map cast to include gender
+        const castWithGender = await Promise.all(
+          (credits.cast || []).slice(0, 12).map(async (actor) => {
+            const personDetails = await tmdb.getPersonDetails(actor.id); // assumes tmdb.getPersonDetails exists
+            return { ...actor, gender: personDetails.gender }; // 1=female, 2=male
+          })
+        );
+
+        setCast(castWithGender);
       } catch (e) {
-        console.error("Failed to load cast", e)
+        console.error("Failed to load cast", e);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
     fetchCredits()
   }, [movie?.id])
+
 
   useEffect(() => {
     const items = JSON.parse(localStorage.getItem("recentlyViewedMovies") || "[]")
@@ -279,20 +289,36 @@ const MovieDetail: React.FC = () => {
               </p>
             ) : (
               <div className="flex flex-wrap gap-6 justify-start">
-                {cast.slice(0, 12).map((actor) => (
-                  <div key={actor.id} className="w-28 text-center">
-                    <img
-                      src={actor.profile_path ? tmdb.getImageUrl(actor.profile_path, "w185") : "/placeholder-avatar.png"}
-                      alt={actor.name}
-                      className="w-28 h-28 object-cover rounded-full shadow-sm mb-2 border border-gray-300 dark:border-gray-600"
-                    />
-                    <p className="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">{actor.name}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{actor.character}</p>
-                  </div>
-                ))}
+                {cast.slice(0, 12).map((actor) => {
+                  // Determine profile image with gender fallback
+                  const profileImage = actor.profile_path
+                    ? tmdb.getImageUrl(actor.profile_path, "w185")
+                    : actor.gender === 1
+                    ? "/female.png"
+                    : actor.gender === 2
+                    ? "/male.png"
+                    : "/unknown.png";
+
+                  return (
+                    <div key={actor.id} className="w-28 text-center">
+                      <img
+                        src={profileImage}
+                        alt={actor.name}
+                        className="w-28 h-28 object-cover rounded-full shadow-sm mb-2 border border-gray-300 dark:border-gray-600"
+                      />
+                      <p className="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">
+                        {actor.name}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                        {actor.character}
+                      </p>
+                    </div>
+                  );
+                })}
               </div>
             )}
-          </div>
+
+                      </div>
         </div>
       </div>
 

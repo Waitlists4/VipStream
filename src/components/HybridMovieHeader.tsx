@@ -39,10 +39,15 @@ const HybridMovieHeader: React.FC<HybridMovieHeaderProps> = ({
       <div className="relative z-10 p-6 md:p-8 flex flex-col md:flex-row gap-4">
         {/* Poster */}
         <div className="flex-shrink-0">
-          <img
-            src={tmdb.getImageUrl(show.poster_path, "w500") || "/placeholder.svg"}
-            alt={show.name}
-            className="w-48 h-64 md:w-64 md:h-96 object-cover rounded-xl shadow-2xl transition-transform hover:scale-105"
+          <div
+            style={{
+              backgroundImage: show.poster_path
+                ? `url(${tmdb.getImageUrl(show.poster_path, "w500")})`
+                : 'linear-gradient(to bottom, rgb(219 39 119), rgb(147 51 234))',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center'
+            }}
+            className="w-48 h-64 md:w-64 md:h-96 rounded-xl shadow-2xl transition-transform hover:scale-105"
           />
         </div>
 
