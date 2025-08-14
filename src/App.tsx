@@ -9,12 +9,6 @@ import DonatePage from './components/DonatePage';
 import VersionPage from './components/VersionPage';
 import AdminLogin from './components/AdminLogin';
 import AdminPanel from './components/AdminPanel';
-import AnimeSection from './components/AnimeSection';
-import AnimeDetail from './components/AnimeDetail';
-import AnimeTVDetail from './components/AnimeTVDetail';
-import AnimeMovieDetail from './components/AnimeMovieDetail';
-import AnimeSeasonDetail from './components/AnimeSeasonDetail';
-import AnimeEpisodeDetail from './components/AnimeSeasonDetail';
 import CustomCursor from './components/CustomCursor';
 import NotFoundPage from './components/NotFoundPage';
 import ScrollToTopButton from './components/ScrollToTop';
@@ -75,11 +69,6 @@ function App() {
           <Route path="/v" element={<VersionPage />} />
           <Route path="/last-updated" element={<LastUpdated />} />
           <Route path="/donate" element={<DonatePage />} />
-          <Route path="/anime" element={<AnimeSection />} />
-          <Route path="/anime/tv/:id" element={<AnimeTVDetail />} />
-          <Route path="/anime/tv/:id/season/:seasonNumber" element={<AnimeSeasonDetail />} />
-          <Route path="/anime/tv/:id/season/:seasonNumber/episode/:episodeNumber" element={<AnimeEpisodeDetail />} />
-          <Route path="/anime/movie/:id" element={<AnimeMovieDetail />} />
 
           <Route 
             path="/admin"
