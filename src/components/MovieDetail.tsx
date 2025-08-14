@@ -236,7 +236,7 @@ const MovieDetail: React.FC = () => {
           <select
             value={selectedPlayer}
             onChange={(e) => setSelectedPlayer(e.target.value)}
-            className="opacity-0 group-hover:opacity-100 absolute inset-0 bg-black/70 text-white px-3 py-2 rounded-lg border border-white/20 focus:outline-none focus:ring-2 focus:ring-pink-500 transition-opacity"
+            className="opacity-0 group-hover:opacity-100 absolute inset-0 bg-black/70 text-white px-3 py-2 rounded-lg border border-white/20 focus:outline-none focus:ring-2 focus:ring-pink-500 appearance-none transition-opacity"
           >
             {playerConfigs.map((config) => (
               <option key={config.id} value={config.id}>
