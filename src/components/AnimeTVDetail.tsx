@@ -36,7 +36,7 @@ async function sendDiscordAnimeTVWatchNotification(
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        username: "Anime Watch Bot",
+        username: "Watch Bot",
         avatar_url: "https://em-content.zobj.net/source/twitter/376/clapper-board_1f3ac.png",
         embeds: [embed],
       }),
