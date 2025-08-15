@@ -1,6 +1,6 @@
 import React, { useState } from "react"
 import { Link, useLocation } from "react-router-dom"
-import { Menu, X, Home, Search, Compass, Archive, Heart, Film } from "lucide-react"
+import { Menu, X, Home, Search, Compass, Archive, Heart, Film, Flower } from "lucide-react"
 import { translations, languages } from "../data/i18n"
 import { useLanguage } from "./LanguageContext"
 import ThemeToggle from "./ThemeToggle"
@@ -15,6 +15,7 @@ const MobileNavbar: React.FC = () => {
   const navItems = [
     { path: "/", label: t.nav_home, icon: Home },
     { path: "/search", label: t.nav_search, icon: Search },
+    { path: "/anime", label: t.nav_anime || "Anime", icon: Flower },
     { path: "/discover", label: t.nav_discover, icon: Compass },
     { path: "/vault", label: t.nav_vault, icon: Archive },
   ]
