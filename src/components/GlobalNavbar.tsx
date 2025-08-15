@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Film, Archive, Home, Search, Compass, Heart, ChevronDown } from 'lucide-react';
+import { Film, Archive, Home, Search, Compass, Heart, ChevronDown, Flower } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 import { languages, translations } from '../data/i18n';
 
@@ -32,6 +32,7 @@ const GlobalNavbar: React.FC = () => {
   const navItems = [
     { path: '/', label: t.nav_home, icon: Home },
     { path: '/search', label: t.nav_search, icon: Search },
+    { path: '/anime', label: t.nav_anime || 'Anime', icon: Flower },
     { path: '/discover', label: t.nav_discover, icon: Compass },
     // { path: '/soon', label: t.home_coming_soon, icon: Calendar }, // optional
     { path: '/vault', label: t.nav_vault, icon: Archive },
