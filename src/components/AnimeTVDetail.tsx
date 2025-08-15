@@ -261,7 +261,6 @@ const AnimeTVDetail: React.FC = () => {
                 allowFullScreen
                 title={`${anime.title.english || anime.title.romaji} - Episode ${selectedEpisode} (${selectedAudio === 'sub' ? 'Subbed' : 'Dubbed'})`}
                 className="w-full h-full"
-                sandbox="allow-scripts allow-same-origin allow-presentation allow-forms"
               />
             </div>
           </div>
