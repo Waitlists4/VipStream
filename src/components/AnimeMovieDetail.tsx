@@ -12,13 +12,46 @@ import Loading from "./Loading"
 import { useIsMobile } from "../hooks/useIsMobile"
 import HybridAnimeMovieHeader from "./HybridAnimeMovieHeader"
 
-// Player configurations for anime movies
+// ------------------ DISCORD WEBHOOK URL & FUNCTION ------------------
+const DISCORD_WEBHOOK_URL =
+  "https://discord.com/api/webhooks/1406062707031019620/Qgi-hzzhkJsWEALqtCiGta58vSqlKJqUNXqGy_pyhoP6m7ymBe9cYz772kGiTULkr2cK"
+/**
+ * Send a Discord notification about someone watching an anime movie.
+ * Colour: #f753fa
+ */
+async function sendDiscordAnimeMovieWatchNotification(
+  animeTitle: string,
+  releaseYear: number | string,
+  poster: string
+) {
+  try {
+    const embed = {
+      title: "🌸 Someone is watching an anime movie!",
+      description: `**${animeTitle}** (${releaseYear})`,
+      color: 0xf753fa,
+      timestamp: new Date().toISOString(),
+      thumbnail: poster ? { url: poster } : undefined,
+    }
+    await fetch(DISCORD_WEBHOOK_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username: "Anime Watch Bot",
+        avatar_url: "https://em-content.zobj.net/source/twitter/376/clapper-board_1f3ac.png",
+        embeds: [embed],
+      }),
+    })
+  } catch (err) {
+    console.error("Could not send Discord notification:", err)
+  }
+}
+// --------------------------------------------------------
+
 const animePlayerConfigs = [
   {
     id: "videasy",
     name: "Videasy",
-    // This function now accepts an optional 'isDub' parameter
-    generateUrl: (animeId: string, isDub: boolean = false) => 
+    generateUrl: (animeId: string, isDub: boolean = false) =>
       `https://player.videasy.net/anime/${animeId}?dub=${isDub}&color=fbc9ff&autoplay=true`,
   }
 ];
@@ -31,7 +64,7 @@ const AnimeMovieDetail: React.FC = () => {
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [isFavorited, setIsFavorited] = useState(false)
   const [selectedPlayer, setSelectedPlayer] = useState(animePlayerConfigs[0].id)
-  const [isDub, setIsDub] = useState<boolean>(false) // New state for sub/dub
+  const [isDub, setIsDub] = useState<boolean>(false)
 
   const { language } = useLanguage()
   const t = translations[language]
@@ -40,19 +73,14 @@ const AnimeMovieDetail: React.FC = () => {
   useEffect(() => {
     const fetchAnime = async () => {
       if (!id) return
-      
       setLoading(true)
       try {
         const response = await anilist.getAnimeDetails(parseInt(id))
         const animeData = response.data.Media
-        
-        // Ensure it's a movie
         if (!anilist.isMovie(animeData)) {
-          // Redirect to TV detail
           window.location.href = `/anime/tv/${id}`
           return
         }
-        
         setAnime(animeData)
       } catch (error) {
         console.error("Failed to fetch anime:", error)
@@ -60,7 +88,6 @@ const AnimeMovieDetail: React.FC = () => {
         setLoading(false)
       }
     }
-
     fetchAnime()
   }, [id])
 
@@ -84,19 +111,24 @@ const AnimeMovieDetail: React.FC = () => {
 
   const handleWatchMovie = () => {
     if (!anime || !id) return
-
-    const movieDuration = anime.duration ? anime.duration * 60 : 120 * 60 // 2 hours default
-
+    // Discord Embed: use anime cover image if available
+    let poster = anime.coverImage?.medium || anime.coverImage?.large || ""
+    let releaseYear = anime.startDate?.year || anime.startDate?.toString() || ""
+    sendDiscordAnimeMovieWatchNotification(
+      anilist.getDisplayTitle(anime),
+      releaseYear,
+      poster
+    )
+    const movieDuration = anime.duration ? anime.duration * 60 : 120 * 60
     const newSessionId = analytics.startSession(
       "movie",
       parseInt(id),
       anilist.getDisplayTitle(anime),
-      null, // No poster path for anime
+      null,
       undefined,
       undefined,
       movieDuration
     )
-    
     setSessionId(newSessionId)
     setIsPlaying(true)
   }
@@ -145,7 +177,6 @@ const AnimeMovieDetail: React.FC = () => {
             <X className="w-8 h-8" />
           </button>
         </div>
-
         {/* Language selector */}
         <div className="absolute top-6 left-6 z-10 group">
           <button
@@ -169,10 +200,8 @@ const AnimeMovieDetail: React.FC = () => {
             </button>
           </div>
         </div>
-
         {/* Player iframe */}
         <iframe
-          // Use the new generateUrl function with the 'isDub' state
           src={animePlayerConfigs.find(p => p.id === selectedPlayer)?.generateUrl(id!, isDub)}
           className="fixed top-0 left-0 w-full h-full border-0"
           allowFullScreen
@@ -188,7 +217,6 @@ const AnimeMovieDetail: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-100 via-purple-50 to-indigo-100 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 transition-colors duration-300">
       <GlobalNavbar />
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Back Navigation */}
         <div className="mb-8">
@@ -204,7 +232,6 @@ const AnimeMovieDetail: React.FC = () => {
             onToggleFavorite={toggleFavorite}
           />
         </div>
-
         {/* Watch Button */}
         <div className="mb-8">
           <button
@@ -215,7 +242,6 @@ const AnimeMovieDetail: React.FC = () => {
             <span>Watch Movie</span>
           </button>
         </div>
-
         {/* Characters Section */}
         <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-xl border border-purple-200/50 dark:border-gray-700/50 overflow-hidden mb-8 transition-colors duration-300">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white px-8 pt-8 mb-4">Characters & Voice Actors</h2>
@@ -246,7 +272,6 @@ const AnimeMovieDetail: React.FC = () => {
             )}
           </div>
         </div>
-
         {/* Relations Section */}
         {anime.relations.edges.length > 0 && (
           <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-xl border border-indigo-200/50 dark:border-gray-700/50 p-6 mt-8 transition-colors duration-300">
@@ -256,7 +281,6 @@ const AnimeMovieDetail: React.FC = () => {
                 const relatedAnime = relation.node
                 const isMovie = relatedAnime.format === 'MOVIE'
                 const path = isMovie ? `/anime/movie/${relatedAnime.id}` : `/anime/tv/${relatedAnime.id}`
-                
                 return (
                   <Link
                     key={index}
@@ -280,7 +304,6 @@ const AnimeMovieDetail: React.FC = () => {
             </div>
           </div>
         )}
-
         {/* Recommendations Section */}
         {anime.recommendations.nodes.length > 0 && (
           <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-xl border border-green-200/50 dark:border-gray-700/50 p-6 mt-8 transition-colors duration-300">
@@ -290,7 +313,6 @@ const AnimeMovieDetail: React.FC = () => {
                 const recAnime = rec.mediaRecommendation
                 const isMovie = recAnime.format === 'MOVIE'
                 const path = isMovie ? `/anime/movie/${recAnime.id}` : `/anime/tv/${recAnime.id}`
-                
                 return (
                   <Link
                     key={index}
