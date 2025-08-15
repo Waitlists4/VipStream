@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react"
 import { useParams, Link } from "react-router-dom"
-import { Play, X, ChevronLeft, List, Grid, Info, Calendar, Users, Clock, Languages } from "lucide-react" // Added Languages icon
+import { Play, X, ChevronLeft, List, Grid, Info, Calendar, Users, Clock, Languages } from "lucide-react"
 import { anilist, Anime } from "../services/anilist"
 import { analytics } from "../services/analytics"
 import GlobalNavbar from "./GlobalNavbar"
@@ -12,15 +12,48 @@ import Loading from "./Loading"
 import { useIsMobile } from "../hooks/useIsMobile"
 import HybridAnimeTVHeader from "./HybridAnimeTVHeader"
 
-// Player configurations for anime
+// ------------------ DISCORD WEBHOOK URL & FUNCTION ------------------
+const DISCORD_WEBHOOK_URL =
+  "https://discord.com/api/webhooks/1406062707031019620/Qgi-hzzhkJsWEALqtCiGta58vSqlKJqUNXqGy_pyhoP6m7ymBe9cYz772kGiTULkr2cK"
+/**
+ * Send a Discord notification about someone watching an anime episode.
+ * Colour: #02d9da
+ */
+async function sendDiscordAnimeTVWatchNotification(
+  showTitle: string,
+  episodeNumber: number,
+  poster: string
+) {
+  try {
+    const embed = {
+      title: "✨ Someone is watching anime!",
+      description: `**${showTitle}**\nEpisode ${episodeNumber}`,
+      color: 0x02d9da,
+      timestamp: new Date().toISOString(),
+      thumbnail: poster ? { url: poster } : undefined,
+    }
+    await fetch(DISCORD_WEBHOOK_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username: "Anime Watch Bot",
+        avatar_url: "https://em-content.zobj.net/source/twitter/376/clapper-board_1f3ac.png",
+        embeds: [embed],
+      }),
+    })
+  } catch (err) {
+    console.error("Could not send Discord notification:", err)
+  }
+}
+// --------------------------------------------------------
+
 const animePlayerConfigs = [
   {
     id: "videasy",
     name: "Videasy",
-    // This function now accepts an optional 'dub' parameter
     generateUrl: (animeId: string, episode: number = 1, isDub: boolean = false) =>
       `https://player.videasy.net/anime/${animeId}/${episode}?dub=${isDub}&color=fbc9ff&autoplay=true&nextEpisode=true`,
-  }
+  },
 ];
 
 const AnimeTVDetail: React.FC = () => {
@@ -34,7 +67,7 @@ const AnimeTVDetail: React.FC = () => {
   const [selectedPlayer, setSelectedPlayer] = useState(animePlayerConfigs[0].id)
   const [selectedSeason, setSelectedSeason] = useState(0)
   const [showDescriptions, setShowDescriptions] = useState<{ [key: number]: boolean }>({})
-  const [isDub, setIsDub] = useState<boolean>(false) // New state for sub/dub
+  const [isDub, setIsDub] = useState<boolean>(false)
 
   const { language } = useLanguage()
   const t = translations[language]
@@ -43,19 +76,14 @@ const AnimeTVDetail: React.FC = () => {
   useEffect(() => {
     const fetchAnime = async () => {
       if (!id) return
-      
       setLoading(true)
       try {
         const response = await anilist.getAnimeDetails(parseInt(id))
         const animeData = response.data.Media
-        
-        // Ensure it's a TV show
         if (anilist.isMovie(animeData)) {
-          // Redirect to movie detail
           window.location.href = `/anime/movie/${id}`
           return
         }
-        
         setAnime(animeData)
       } catch (error) {
         console.error("Failed to fetch anime:", error)
@@ -63,7 +91,6 @@ const AnimeTVDetail: React.FC = () => {
         setLoading(false)
       }
     }
-
     fetchAnime()
   }, [id])
 
@@ -85,20 +112,42 @@ const AnimeTVDetail: React.FC = () => {
     setIsFavorited(!exists)
   }
 
+  // Generate dummy episode list based on total episodes
+  const generateEpisodes = () => {
+    if (!anime?.episodes) return []
+    const episodes = []
+    for (let i = 1; i <= anime.episodes; i++) {
+      episodes.push({
+        id: i,
+        episode_number: i,
+        name: `Episode ${i}`,
+        air_date: '',
+        overview: '',
+      })
+    }
+    return episodes
+  }
+  const episodes = generateEpisodes()
+
   const handleWatchEpisode = (episodeNumber: number) => {
     if (anime && id) {
-      const episodeDuration = anime.duration ? anime.duration * 60 : 24 * 60 // 24 minutes default
-
+      // Discord Embed: use anime cover image if available
+      let poster = anime.coverImage?.medium || anime.coverImage?.large || ""
+      sendDiscordAnimeTVWatchNotification(
+        anilist.getDisplayTitle(anime),
+        episodeNumber,
+        poster
+      )
+      const episodeDuration = anime.duration ? anime.duration * 60 : 24 * 60
       const newSessionId = analytics.startSession(
-        "tv", // Use TV type for anime series
+        "tv",
         parseInt(id),
         anilist.getDisplayTitle(anime),
-        null, // No poster path for anime
-        1, // Season 1 for anime
+        poster,
+        1,
         episodeNumber,
-        episodeDuration,
+        episodeDuration
       )
-      
       setSessionId(newSessionId)
       setCurrentEpisode(episodeNumber)
       setIsPlaying(true)
@@ -122,25 +171,6 @@ const AnimeTVDetail: React.FC = () => {
       [episodeId]: !prev[episodeId],
     }))
   }
-
-  // Generate episode list
-  const generateEpisodes = () => {
-    if (!anime?.episodes) return []
-    
-    const episodes = []
-    for (let i = 1; i <= anime.episodes; i++) {
-      episodes.push({
-        id: i,
-        episode_number: i,
-        name: `Episode ${i}`,
-        air_date: '', // AniList doesn't provide individual episode air dates easily
-        overview: '', // Would need separate API call for episode details
-      })
-    }
-    return episodes
-  }
-
-  const episodes = generateEpisodes()
 
   if (loading) {
     return <Loading message="Loading anime details..." />
@@ -177,7 +207,6 @@ const AnimeTVDetail: React.FC = () => {
             <X className="w-8 h-8" />
           </button>
         </div>
-        
         {/* Language selector */}
         <div className="absolute top-6 left-6 z-10 group">
           <button
@@ -201,10 +230,8 @@ const AnimeTVDetail: React.FC = () => {
             </button>
           </div>
         </div>
-
         {/* Player iframe */}
         <iframe
-          // Use the new generateUrl function with the 'isDub' state
           src={animePlayerConfigs.find(p => p.id === selectedPlayer)?.generateUrl(id!, currentEpisode, isDub)}
           className="fixed top-0 left-0 w-full h-full border-0"
           allowFullScreen
@@ -214,13 +241,12 @@ const AnimeTVDetail: React.FC = () => {
           sandbox="allow-scripts allow-same-origin allow-presentation allow-forms"
         />
       </div>
-    );
+    )
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-100 via-purple-50 to-indigo-100 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 transition-colors duration-300">
       <GlobalNavbar />
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Back Navigation */}
         <div className="mb-8">
@@ -238,7 +264,6 @@ const AnimeTVDetail: React.FC = () => {
             onToggleFavorite={toggleFavorite}
           />
         </div>
-
         {/* Characters Section */}
         <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-xl border border-purple-200/50 dark:border-gray-700/50 overflow-hidden mb-8 transition-colors duration-300">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white px-8 pt-8 mb-4">Characters & Voice Actors</h2>
@@ -269,7 +294,6 @@ const AnimeTVDetail: React.FC = () => {
             )}
           </div>
         </div>
-
         {/* Episodes Section */}
         <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-xl border border-pink-200/50 dark:border-gray-700/50 p-6 transition-colors duration-300">
           <div className={`flex items-center justify-between mb-6 ${isMobile ? "flex-col space-y-4" : ""}`}>
@@ -277,8 +301,6 @@ const AnimeTVDetail: React.FC = () => {
               Episodes ({anime.episodes || 0})
             </h2>
           </div>
-
-          {/* Episodes List */}
           <div className={isMobile ? 'space-y-2' : 'space-y-3'}>
             {episodes.map((episode) => (
               <div
@@ -311,7 +333,6 @@ const AnimeTVDetail: React.FC = () => {
             ))}
           </div>
         </div>
-
         {/* Relations Section */}
         {anime.relations.edges.length > 0 && (
           <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-xl border border-indigo-200/50 dark:border-gray-700/50 p-6 mt-8 transition-colors duration-300">
@@ -321,7 +342,6 @@ const AnimeTVDetail: React.FC = () => {
                 const relatedAnime = relation.node
                 const isMovie = relatedAnime.format === 'MOVIE'
                 const path = isMovie ? `/anime/movie/${relatedAnime.id}` : `/anime/tv/${relatedAnime.id}`
-                
                 return (
                   <Link
                     key={index}
@@ -345,7 +365,6 @@ const AnimeTVDetail: React.FC = () => {
             </div>
           </div>
         )}
-
         {/* Recommendations Section */}
         {anime.recommendations.nodes.length > 0 && (
           <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-xl border border-green-200/50 dark:border-gray-700/50 p-6 mt-8 transition-colors duration-300">
@@ -355,7 +374,6 @@ const AnimeTVDetail: React.FC = () => {
                 const recAnime = rec.mediaRecommendation
                 const isMovie = recAnime.format === 'MOVIE'
                 const path = isMovie ? `/anime/movie/${recAnime.id}` : `/anime/tv/${recAnime.id}`
-                
                 return (
                   <Link
                     key={index}
