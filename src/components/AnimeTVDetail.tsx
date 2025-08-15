@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react"
 import { useParams, Link } from "react-router-dom"
-import { Play, X, ChevronLeft, List, Grid, Info, Calendar, Users, Clock } from "lucide-react"
+import { Play, X, ChevronLeft, List, Grid, Info, Calendar, Users, Clock, Languages } from "lucide-react" // Added Languages icon
 import { anilist, Anime } from "../services/anilist"
 import { analytics } from "../services/analytics"
 import GlobalNavbar from "./GlobalNavbar"
@@ -17,21 +17,10 @@ const animePlayerConfigs = [
   {
     id: "videasy",
     name: "Videasy",
-    generateUrl: (animeId: string, episode: number = 1) => 
-      `https://player.videasy.net/anime/${animeId}/${episode}?color=fbc9ff&autoplay=true&nextEpisode=true`,
-  },
-  {
-    id: "gogoanime",
-    name: "GogoAnime",
-    generateUrl: (animeId: string, episode: number = 1) => 
-      `https://gogoanime.lu/embed/${animeId}-episode-${episode}`,
-  },
-  {
-    id: "9anime",
-    name: "9Anime",
-    generateUrl: (animeId: string, episode: number = 1) => 
-      `https://9anime.to/embed/${animeId}/${episode}`,
-  },
+    // This function now accepts an optional 'dub' parameter
+    generateUrl: (animeId: string, episode: number = 1, isDub: boolean = false) =>
+      `https://player.videasy.net/anime/${animeId}/${episode}?dub=${isDub}&color=fbc9ff&autoplay=true&nextEpisode=true`,
+  }
 ];
 
 const AnimeTVDetail: React.FC = () => {
@@ -45,6 +34,7 @@ const AnimeTVDetail: React.FC = () => {
   const [selectedPlayer, setSelectedPlayer] = useState(animePlayerConfigs[0].id)
   const [selectedSeason, setSelectedSeason] = useState(0)
   const [showDescriptions, setShowDescriptions] = useState<{ [key: number]: boolean }>({})
+  const [isDub, setIsDub] = useState<boolean>(false) // New state for sub/dub
 
   const { language } = useLanguage()
   const t = translations[language]
@@ -187,32 +177,35 @@ const AnimeTVDetail: React.FC = () => {
             <X className="w-8 h-8" />
           </button>
         </div>
-
-        {/* Player Selector */}
-        <div className="absolute top-6 left-6 z-10">
-          <div className="bg-black/70 backdrop-blur-md rounded-xl p-4 border border-white/20">
-            <h3 className="text-white text-sm font-medium mb-3">Select Player</h3>
-            <div className="grid grid-cols-1 gap-2">
-              {animePlayerConfigs.map((config) => (
-                <button
-                  key={config.id}
-                  onClick={() => setSelectedPlayer(config.id)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                    selectedPlayer === config.id
-                      ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg'
-                      : 'bg-white/10 text-white hover:bg-white/20'
-                  }`}
-                >
-                  {config.name}
-                </button>
-              ))}
-            </div>
+        
+        {/* Language selector */}
+        <div className="absolute top-6 left-6 z-10 group">
+          <button
+            className="text-white hover:text-gray-300 transition-colors opacity-0 group-hover:opacity-100"
+            aria-label="Toggle language"
+          >
+            <Languages className="w-8 h-8" />
+          </button>
+          <div className="absolute top-10 left-0 bg-black/50 backdrop-blur-sm rounded-lg shadow-xl p-2 w-28 text-center text-white transition-opacity duration-300 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto">
+            <button
+              onClick={() => setIsDub(false)}
+              className={`block w-full text-left px-3 py-2 rounded-md ${!isDub ? 'bg-white/20' : 'hover:bg-white/10'}`}
+            >
+              Sub
+            </button>
+            <button
+              onClick={() => setIsDub(true)}
+              className={`block w-full text-left px-3 py-2 rounded-md ${isDub ? 'bg-white/20' : 'hover:bg-white/10'}`}
+            >
+              Dub
+            </button>
           </div>
         </div>
 
         {/* Player iframe */}
         <iframe
-          src={animePlayerConfigs.find(p => p.id === selectedPlayer)?.generateUrl(id!, currentEpisode)}
+          // Use the new generateUrl function with the 'isDub' state
+          src={animePlayerConfigs.find(p => p.id === selectedPlayer)?.generateUrl(id!, currentEpisode, isDub)}
           className="fixed top-0 left-0 w-full h-full border-0"
           allowFullScreen
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
