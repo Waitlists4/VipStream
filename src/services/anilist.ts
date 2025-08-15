@@ -1,64 +1,487 @@
-// services/tmdb.ts
-export const tmdb = {
-  getTVDetails: async (id: number) => {
-    const res = await fetch(`https://api.themoviedb.org/3/tv/${id}?api_key=YOUR_KEY`);
-    return await res.json();
-  },
-  getImageUrl: (path: string | null, size: string = 'w500') =>
-    path ? `https://image.tmdb.org/t/p/${size}${path}` : ''
-};
+// Enhanced AniList service with comprehensive functionality
+const ANILIST_API_URL = 'https://graphql.anilist.co';
 
-// services/anilist.ts
-export const anilist = {
-  searchAnime: async (query: string, page = 1, perPage = 1) => {
-    const queryStr = `
+export interface AnimeTitle {
+  romaji: string;
+  english: string | null;
+  native: string;
+}
+
+export interface AnimeStudio {
+  id: number;
+  name: string;
+}
+
+export interface AnimeGenre {
+  id: number;
+  name: string;
+}
+
+export interface AnimeCharacter {
+  id: number;
+  name: {
+    full: string;
+    native: string;
+  };
+  image: {
+    large: string;
+    medium: string;
+  };
+}
+
+export interface AnimeVoiceActor {
+  id: number;
+  name: {
+    full: string;
+    native: string;
+  };
+  image: {
+    large: string;
+    medium: string;
+  };
+  language: string;
+}
+
+export interface AnimeCharacterEdge {
+  role: string;
+  node: AnimeCharacter;
+  voiceActors: AnimeVoiceActor[];
+}
+
+export interface AnimeRelation {
+  id: number;
+  title: AnimeTitle;
+  format: string;
+  type: string;
+  status: string;
+  coverImage: {
+    large: string;
+    medium: string;
+  };
+}
+
+export interface AnimeRecommendation {
+  id: number;
+  title: AnimeTitle;
+  format: string;
+  averageScore: number;
+  coverImage: {
+    large: string;
+    medium: string;
+  };
+}
+
+export interface Anime {
+  id: number;
+  title: AnimeTitle;
+  description: string;
+  format: string;
+  status: string;
+  episodes: number | null;
+  duration: number | null;
+  season: string | null;
+  seasonYear: number | null;
+  averageScore: number | null;
+  popularity: number;
+  genres: string[];
+  studios: {
+    nodes: AnimeStudio[];
+  };
+  coverImage: {
+    large: string;
+    medium: string;
+    color: string;
+  };
+  bannerImage: string | null;
+  startDate: {
+    year: number | null;
+    month: number | null;
+    day: number | null;
+  };
+  endDate: {
+    year: number | null;
+    month: number | null;
+    day: number | null;
+  };
+  source: string;
+  characters: {
+    edges: AnimeCharacterEdge[];
+  };
+  relations: {
+    edges: Array<{
+      relationType: string;
+      node: AnimeRelation;
+    }>;
+  };
+  recommendations: {
+    nodes: Array<{
+      mediaRecommendation: AnimeRecommendation;
+    }>;
+  };
+}
+
+export interface AnimeSearchResponse {
+  data: {
+    Page: {
+      pageInfo: {
+        total: number;
+        currentPage: number;
+        lastPage: number;
+        hasNextPage: boolean;
+        perPage: number;
+      };
+      media: Anime[];
+    };
+  };
+}
+
+export interface AnimeDetailsResponse {
+  data: {
+    Media: Anime;
+  };
+}
+
+class AniListService {
+  private async query(query: string, variables: any = {}): Promise<any> {
+    try {
+      const response = await fetch(ANILIST_API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+          query,
+          variables,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`AniList API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      if (data.errors) {
+        throw new Error(data.errors[0]?.message || 'AniList API error');
+      }
+
+      return data;
+    } catch (error) {
+      console.error('AniList query error:', error);
+      throw error;
+    }
+  }
+
+  async searchAnime(searchQuery: string, page = 1, perPage = 20): Promise<AnimeSearchResponse> {
+    const query = `
       query ($search: String, $page: Int, $perPage: Int) {
         Page(page: $page, perPage: $perPage) {
-          media(search: $search, type: ANIME) {
+          pageInfo {
+            total
+            currentPage
+            lastPage
+            hasNextPage
+            perPage
+          }
+          media(search: $search, type: ANIME, sort: [POPULARITY_DESC, SCORE_DESC]) {
             id
-            title { romaji english native }
+            title {
+              romaji
+              english
+              native
+            }
+            format
+            status
+            episodes
+            duration
+            season
+            seasonYear
+            averageScore
+            popularity
+            genres
+            coverImage {
+              large
+              medium
+              color
+            }
+            bannerImage
+            startDate {
+              year
+              month
+              day
+            }
+            studios {
+              nodes {
+                id
+                name
+              }
+            }
+            source
           }
         }
       }
     `;
-    const res = await fetch('https://graphql.anilist.co', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ query: queryStr, variables: { search: query, page, perPage } })
-    });
-    return res.json();
-  },
 
-  getAnimeDetails: async (id: number) => {
-    const queryStr = `
-      query ($id: Int) {
-        Media(id: $id, type: ANIME) {
-          id
-          title { romaji english native }
-          description
-          bannerImage
-          averageScore
-          popularity
-          episodes
-          duration
-          status
-          format
-          source
-          genres
-          tags { name }
-          studios { nodes { name } }
-          season
-          seasonYear
-          relations { edges { relationType node { id title { romaji english } } } }
-          recommendations { nodes { mediaRecommendation { id title { romaji english } averageScore } } }
+    return this.query(query, { search: searchQuery, page, perPage });
+  }
+
+  async getTrendingAnime(page = 1, perPage = 20): Promise<AnimeSearchResponse> {
+    const query = `
+      query ($page: Int, $perPage: Int) {
+        Page(page: $page, perPage: $perPage) {
+          pageInfo {
+            total
+            currentPage
+            lastPage
+            hasNextPage
+            perPage
+          }
+          media(type: ANIME, sort: TRENDING_DESC) {
+            id
+            title {
+              romaji
+              english
+              native
+            }
+            format
+            status
+            episodes
+            duration
+            season
+            seasonYear
+            averageScore
+            popularity
+            genres
+            coverImage {
+              large
+              medium
+              color
+            }
+            bannerImage
+            startDate {
+              year
+              month
+              day
+            }
+            studios {
+              nodes {
+                id
+                name
+              }
+            }
+            source
+          }
         }
       }
     `;
-    const res = await fetch('https://graphql.anilist.co', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ query: queryStr, variables: { id } })
-    });
-    return res.json();
+
+    return this.query(query, { page, perPage });
   }
-};
+
+  async getPopularAnime(page = 1, perPage = 20): Promise<AnimeSearchResponse> {
+    const query = `
+      query ($page: Int, $perPage: Int) {
+        Page(page: $page, perPage: $perPage) {
+          pageInfo {
+            total
+            currentPage
+            lastPage
+            hasNextPage
+            perPage
+          }
+          media(type: ANIME, sort: POPULARITY_DESC) {
+            id
+            title {
+              romaji
+              english
+              native
+            }
+            format
+            status
+            episodes
+            duration
+            season
+            seasonYear
+            averageScore
+            popularity
+            genres
+            coverImage {
+              large
+              medium
+              color
+            }
+            bannerImage
+            startDate {
+              year
+              month
+              day
+            }
+            studios {
+              nodes {
+                id
+                name
+              }
+            }
+            source
+          }
+        }
+      }
+    `;
+
+    return this.query(query, { page, perPage });
+  }
+
+  async getAnimeDetails(id: number): Promise<AnimeDetailsResponse> {
+    const query = `
+      query ($id: Int) {
+        Media(id: $id, type: ANIME) {
+          id
+          title {
+            romaji
+            english
+            native
+          }
+          description
+          format
+          status
+          episodes
+          duration
+          season
+          seasonYear
+          averageScore
+          popularity
+          genres
+          studios {
+            nodes {
+              id
+              name
+            }
+          }
+          coverImage {
+            large
+            medium
+            color
+          }
+          bannerImage
+          startDate {
+            year
+            month
+            day
+          }
+          endDate {
+            year
+            month
+            day
+          }
+          source
+          characters(sort: [ROLE, RELEVANCE], perPage: 12) {
+            edges {
+              role
+              node {
+                id
+                name {
+                  full
+                  native
+                }
+                image {
+                  large
+                  medium
+                }
+              }
+              voiceActors(language: JAPANESE, sort: [RELEVANCE]) {
+                id
+                name {
+                  full
+                  native
+                }
+                image {
+                  large
+                  medium
+                }
+                language
+              }
+            }
+          }
+          relations {
+            edges {
+              relationType
+              node {
+                id
+                title {
+                  romaji
+                  english
+                  native
+                }
+                format
+                type
+                status
+                coverImage {
+                  large
+                  medium
+                }
+              }
+            }
+          }
+          recommendations(sort: [RATING_DESC], perPage: 6) {
+            nodes {
+              mediaRecommendation {
+                id
+                title {
+                  romaji
+                  english
+                  native
+                }
+                format
+                averageScore
+                coverImage {
+                  large
+                  medium
+                }
+              }
+            }
+          }
+        }
+      }
+    `;
+
+    return this.query(query, { id });
+  }
+
+  // Helper methods
+  getDisplayTitle(anime: Anime): string {
+    return anime.title.english || anime.title.romaji || anime.title.native;
+  }
+
+  getYear(anime: Anime): string {
+    if (anime.startDate?.year) {
+      if (anime.endDate?.year && anime.endDate.year !== anime.startDate.year) {
+        return `${anime.startDate.year}-${anime.endDate.year}`;
+      }
+      return anime.startDate.year.toString();
+    }
+    return anime.seasonYear?.toString() || 'Unknown';
+  }
+
+  formatDuration(duration: number | null): string {
+    if (!duration) return 'Unknown';
+    if (duration < 60) return `${duration}m`;
+    const hours = Math.floor(duration / 60);
+    const minutes = duration % 60;
+    return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
+  }
+
+  formatScore(score: number | null): string {
+    return score ? (score / 10).toFixed(1) : 'N/A';
+  }
+
+  isMovie(anime: Anime): boolean {
+    return anime.format === 'MOVIE';
+  }
+
+  isTVShow(anime: Anime): boolean {
+    return ['TV', 'TV_SHORT', 'OVA', 'ONA'].includes(anime.format);
+  }
+}
+
+export const anilist = new AniListService();
