@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useMemo } from "react"
 import { useParams, Link } from "react-router-dom"
 import { Play, X, ChevronLeft, List, Grid, Info, Calendar, Users, Clock, Languages } from "lucide-react"
 import { anilist, Anime } from "../services/anilist"
@@ -51,8 +51,15 @@ const animePlayerConfigs = [
   {
     id: "videasy",
     name: "Videasy",
-    generateUrl: (animeId: string, episode: number = 1, isDub: boolean = false) =>
-      `https://player.videasy.net/anime/${animeId}/${episode}?dub=${isDub}&color=fbc9ff&autoplay=true&nextEpisode=true`,
+    // Modified to handle both series and movies
+    generateUrl: (animeId: string, isMovie: boolean, episode: number = 1, isDub: boolean = false) => {
+      // If it's a movie, use the movie URL format
+      if (isMovie) {
+        return `https://player.videasy.net/anime/${animeId}?dub=${isDub}&color=fbc9ff&autoplay=true`;
+      }
+      // Otherwise, use the series URL format with episode number
+      return `https://player.videasy.net/anime/${animeId}/${episode}?dub=${isDub}&color=fbc9ff&autoplay=true&nextEpisode=true`;
+    }
   },
 ];
 
@@ -68,6 +75,17 @@ const AnimeTVDetail: React.FC = () => {
   const [selectedSeason, setSelectedSeason] = useState(0)
   const [showDescriptions, setShowDescriptions] = useState<{ [key: number]: boolean }>({})
   const [isDub, setIsDub] = useState<boolean>(false)
+  const [episodes, setEpisodes] = useState<{ id: number; episode_number: number; name: string }[]>([]);
+  
+  // New state to store fetched season data
+  const [seasonData, setSeasonData] = useState<Anime[]>([]);
+
+  // Use useMemo to prevent re-calculating seasons on every render
+  const seasons = useMemo(() => {
+    return anime?.relations?.edges
+      .filter(edge => edge.relationType === "SEQUEL" || edge.relationType === "PREQUEL")
+      .map(edge => edge.node) || [];
+  }, [anime]);
 
   const { language } = useLanguage()
   const t = translations[language]
@@ -93,6 +111,19 @@ const AnimeTVDetail: React.FC = () => {
     }
     fetchAnime()
   }, [id])
+  
+  // Fetch detailed data for each related season
+  useEffect(() => {
+    const fetchSeasonDetails = async () => {
+      if (seasons.length > 0) {
+        const seasonDetails = await Promise.all(
+          seasons.map(season => anilist.getAnimeDetails(season.id).then(res => res.data.Media))
+        );
+        setSeasonData(seasonDetails);
+      }
+    };
+    fetchSeasonDetails();
+  }, [seasons]); // Dependency on seasons ensures this runs only when seasons change
 
   useEffect(() => {
     if (anime) {
@@ -112,46 +143,76 @@ const AnimeTVDetail: React.FC = () => {
     setIsFavorited(!exists)
   }
 
-  // Generate dummy episode list based on total episodes
-  const generateEpisodes = () => {
-    if (!anime?.episodes) return []
-    const episodes = []
-    for (let i = 1; i <= anime.episodes; i++) {
-      episodes.push({
-        id: i,
-        episode_number: i,
-        name: `Episode ${i}`,
-        air_date: '',
-        overview: '',
-      })
+  // Function to generate episodes for a given season
+  const generateEpisodes = (seasonIndex: number, animeData: any, seasonsDetails: any[]) => {
+    let targetAnime = seasonIndex === 0 ? animeData : seasonsDetails[seasonIndex - 1];
+    if (!targetAnime) return [];
+
+    const totalEpisodes = targetAnime.episodes || 0;
+    return Array.from({ length: totalEpisodes }, (_, i) => ({
+      id: i + 1,
+      episode_number: i + 1,
+      name: targetAnime.title.english
+        ? `Ep ${i + 1} - ${targetAnime.title.english}`
+        : `Episode ${i + 1}`,
+    }));
+  };
+
+  // Update episodes when anime, selectedSeason, or seasonData changes
+  useEffect(() => {
+    if (anime) {
+      const eps = generateEpisodes(selectedSeason, anime, seasonData);
+      setEpisodes(eps);
     }
-    return episodes
-  }
-  const episodes = generateEpisodes()
+  }, [anime, selectedSeason, seasonData]); 
 
   const handleWatchEpisode = (episodeNumber: number) => {
-    if (anime && id) {
-      // Discord Embed: use anime cover image if available
-      let poster = anime.coverImage?.medium || anime.coverImage?.large || ""
-      sendDiscordAnimeTVWatchNotification(
-        anilist.getDisplayTitle(anime),
-        episodeNumber,
-        poster
-      )
-      const episodeDuration = anime.duration ? anime.duration * 60 : 24 * 60
-      const newSessionId = analytics.startSession(
-        "tv",
-        parseInt(id),
-        anilist.getDisplayTitle(anime),
-        poster,
-        1,
-        episodeNumber,
-        episodeDuration
-      )
-      setSessionId(newSessionId)
-      setCurrentEpisode(episodeNumber)
-      setIsPlaying(true)
+    if (!anime || !id) return;
+
+    // Get the currently selected anime object (either the main one or a related season/movie)
+    let currentAnime = anime;
+    if (selectedSeason > 0 && seasonData[selectedSeason - 1]) {
+      currentAnime = seasonData[selectedSeason - 1];
     }
+    
+    if (!currentAnime) return;
+
+    // Determine if the selected media is a movie
+    const isMovie = anilist.isMovie(currentAnime);
+
+    // Discord Embed: use anime cover image if available
+    let poster = currentAnime.coverImage?.medium || currentAnime.coverImage?.large || ""
+    sendDiscordAnimeTVWatchNotification(
+      anilist.getDisplayTitle(currentAnime),
+      episodeNumber,
+      poster
+    )
+    
+    // Use the ID of the currently selected anime for the player URL
+    const animeIdToPlay = currentAnime.id.toString();
+
+    // Use the custom generateUrl function from the config
+    const playerUrl = animePlayerConfigs.find(p => p.id === selectedPlayer)?.generateUrl(animeIdToPlay, isMovie, episodeNumber, isDub);
+
+    // Update the iframe src and set isPlaying
+    const playerFrame = document.querySelector('iframe');
+    if (playerFrame && playerUrl) {
+      playerFrame.src = playerUrl;
+    }
+    
+    const episodeDuration = currentAnime.duration ? currentAnime.duration * 60 : 24 * 60
+    const newSessionId = analytics.startSession(
+      "tv",
+      currentAnime.id,
+      anilist.getDisplayTitle(currentAnime),
+      poster,
+      1,
+      episodeNumber,
+      episodeDuration
+    )
+    setSessionId(newSessionId)
+    setCurrentEpisode(episodeNumber)
+    setIsPlaying(true)
   }
 
   const handleClosePlayer = () => {
@@ -194,6 +255,10 @@ const AnimeTVDetail: React.FC = () => {
     )
   }
 
+  // Get the currently selected anime object (either the main one or a related season/movie)
+  const currentAnime = selectedSeason === 0 ? anime : seasonData[selectedSeason - 1];
+  const isSelectedMovie = anilist.isMovie(currentAnime);
+
   if (isPlaying) {
     return (
       <div className="fixed inset-0 bg-black z-50">
@@ -232,11 +297,12 @@ const AnimeTVDetail: React.FC = () => {
         </div>
         {/* Player iframe */}
         <iframe
-          src={animePlayerConfigs.find(p => p.id === selectedPlayer)?.generateUrl(id!, currentEpisode, isDub)}
+          // Use the updated generateUrl function to get the correct URL
+          src={animePlayerConfigs.find(p => p.id === selectedPlayer)?.generateUrl(currentAnime.id.toString(), isSelectedMovie, currentEpisode, isDub)}
           className="fixed top-0 left-0 w-full h-full border-0"
           allowFullScreen
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
-          title={`${anilist.getDisplayTitle(anime)} - Episode ${currentEpisode}`}
+          title={`${anilist.getDisplayTitle(currentAnime)} - ${isSelectedMovie ? 'Movie' : `Episode ${currentEpisode}`}`}
           referrerPolicy="no-referrer"
           sandbox="allow-scripts allow-same-origin allow-presentation allow-forms"
         />
@@ -258,11 +324,13 @@ const AnimeTVDetail: React.FC = () => {
           </Link>
           <HybridAnimeTVHeader
             anime={anime}
-            selectedSeason={selectedSeason}
-            onSeasonChange={setSelectedSeason}
             isFavorited={isFavorited}
             onToggleFavorite={toggleFavorite}
+            seasons={seasons}
+            selectedSeason={selectedSeason}
+            onSeasonChange={setSelectedSeason}
           />
+
         </div>
         {/* Characters Section */}
         <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-xl border border-purple-200/50 dark:border-gray-700/50 overflow-hidden mb-8 transition-colors duration-300">
@@ -298,29 +366,56 @@ const AnimeTVDetail: React.FC = () => {
         <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-xl border border-pink-200/50 dark:border-gray-700/50 p-6 transition-colors duration-300">
           <div className={`flex items-center justify-between mb-6 ${isMobile ? "flex-col space-y-4" : ""}`}>
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white transition-colors duration-300">
-              Episodes ({anime.episodes || 0})
+              Episodes ({currentAnime?.episodes || 0})
             </h2>
+
+            {/* Season Selector (Top Right) */}
+            {seasons.length > 0 && (
+              <select
+                value={selectedSeason}
+                onChange={(e) => setSelectedSeason(Number(e.target.value))}
+                className="rounded-md border p-2 bg-gray-900 text-white"
+              >
+                {/* Base Anime as season 0 */}
+                <option value={0}>{anime.title.english || anime.title.romaji || anime.title.native}</option>
+
+                {/* Map through all seasons */}
+                {seasons.map((season, index) => (
+                  <option key={season.id} value={index + 1}>
+                    {season.title.english || season.title.romaji || season.title.native}
+                  </option>
+                ))}
+              </select>
+            )}
+
           </div>
+
           <div className={isMobile ? 'space-y-2' : 'space-y-3'}>
             {episodes.map((episode) => (
               <div
                 key={episode.id}
-                className={`group bg-gradient-to-br from-pink-50 to-purple-50 dark:from-gray-700 dark:to-gray-600 border border-pink-200/50 dark:border-gray-600/50 overflow-hidden hover:shadow-lg transition-all duration-300 ${isMobile ? 'rounded-lg' : 'rounded-xl'}`}
+                className={`group bg-gradient-to-br from-pink-50 to-purple-50 dark:from-gray-700 dark:to-gray-600 
+                             border border-pink-200/50 dark:border-gray-600/50 overflow-hidden hover:shadow-lg 
+                             transition-all duration-300 ${isMobile ? 'rounded-lg' : 'rounded-xl'}`}
               >
                 <div className={isMobile ? 'p-3' : 'p-4'}>
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center space-x-3">
-                      <span className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                      <span className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-3 py-1 
+                                         rounded-full text-sm font-semibold">
                         {episode.episode_number}
                       </span>
-                      <h3 className={`font-semibold ${isMobile ? 'text-sm' : 'text-base'} text-gray-900 dark:text-white group-hover:text-pink-600 dark:group-hover:text-pink-400 transition-colors`}>
+                      <h3 className={`font-semibold ${isMobile ? 'text-sm' : 'text-base'} text-gray-900 dark:text-white 
+                                         group-hover:text-pink-600 dark:group-hover:text-pink-400 transition-colors`}>
                         {episode.name}
                       </h3>
                     </div>
                     <div className={`flex items-center space-x-2 ${isMobile ? 'flex-col' : ''}`}>
                       <button
                         onClick={() => handleWatchEpisode(episode.episode_number)}
-                        className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-3 py-1 rounded-lg font-semibold hover:from-pink-600 hover:to-purple-700 transition-colors flex items-center space-x-2"
+                        className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-3 py-1 rounded-lg 
+                                     font-semibold hover:from-pink-600 hover:to-purple-700 transition-colors 
+                                     flex items-center space-x-2"
                         title="Watch Episode"
                       >
                         <Play className="w-4 h-4" />
@@ -333,6 +428,7 @@ const AnimeTVDetail: React.FC = () => {
             ))}
           </div>
         </div>
+
         {/* Relations Section */}
         {anime.relations.edges.length > 0 && (
           <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-xl border border-indigo-200/50 dark:border-gray-700/50 p-6 mt-8 transition-colors duration-300">

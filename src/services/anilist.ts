@@ -449,9 +449,13 @@ class AniListService {
   }
 
   // Helper methods
-  getDisplayTitle(anime: Anime): string {
-    return anime.title.english || anime.title.romaji || anime.title.native;
+  getDisplayTitle(anime: Anime | { title?: AnimeTitle } | null | undefined): string {
+    if (!anime || !anime.title) return "Untitled";
+
+    const { english, romaji, native } = anime.title;
+    return english || romaji || native || "Untitled";
   }
+
 
   getYear(anime: Anime): string {
     if (anime.startDate?.year) {

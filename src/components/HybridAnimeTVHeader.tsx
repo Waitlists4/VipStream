@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react"
-import { Star, Heart, Clock, Calendar, Users } from "lucide-react"
+import { Star, Heart, Clock, Users } from "lucide-react"
 import { anilist, Anime } from "../services/anilist"
 import { useLanguage } from "./LanguageContext"
 import { translations } from "../data/i18n"
@@ -10,12 +10,25 @@ interface HybridAnimeTVHeaderProps {
   anime: Anime
   isFavorited: boolean
   onToggleFavorite: () => void
+  seasons: { id: number; title: string; episodes: number }[]
+  selectedSeason: number
+  onSeasonChange: (seasonIndex: number) => void
 }
+
+function formatTitle(title: any) {
+  if (!title) return "Untitled"
+  if (typeof title === "string") return title
+  return [title.english, title.romaji, title.native].filter(Boolean).join(" / ")
+}
+
 
 const HybridAnimeTVHeader: React.FC<HybridAnimeTVHeaderProps> = ({
   anime,
   isFavorited,
   onToggleFavorite,
+  seasons,
+  selectedSeason,
+  onSeasonChange,
 }) => {
   const { language } = useLanguage()
   const t = translations[language] || translations.en
@@ -46,9 +59,9 @@ const HybridAnimeTVHeader: React.FC<HybridAnimeTVHeaderProps> = ({
                 style={{
                   backgroundImage: anime.coverImage.large
                     ? `url(${anime.coverImage.large})`
-                    : 'linear-gradient(to bottom, rgb(219 39 119), rgb(147 51 234))',
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center'
+                    : "linear-gradient(to bottom, rgb(219 39 119), rgb(147 51 234))",
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
                 }}
                 className="w-48 h-72 md:w-64 md:h-96 rounded-xl shadow-2xl transition-transform group-hover:scale-105"
               />
@@ -69,16 +82,22 @@ const HybridAnimeTVHeader: React.FC<HybridAnimeTVHeaderProps> = ({
                   </p>
                 )}
               </div>
-              <button
-                onClick={onToggleFavorite}
-                className={`p-2 rounded-full transition-colors ${
-                  isFavorited 
-                    ? 'text-pink-500 bg-pink-500/20' 
-                    : 'text-white hover:text-pink-500 hover:bg-pink-500/20'
-                }`}
-              >
-                <Heart className="w-6 h-6" fill={isFavorited ? "currentColor" : "none"} />
-              </button>
+              <div className="flex items-center space-x-3">
+                {/* Favorite Button */}
+                <button
+                  onClick={onToggleFavorite}
+                  className={`p-2 rounded-full transition-colors ${
+                    isFavorited
+                      ? "text-pink-500 bg-pink-500/20"
+                      : "text-white hover:text-pink-500 hover:bg-pink-500/20"
+                  }`}
+                >
+                  <Heart
+                    className="w-6 h-6"
+                    fill={isFavorited ? "currentColor" : "none"}
+                  />
+                </button>
+              </div>
             </div>
 
             {/* Meta Info */}
@@ -107,24 +126,28 @@ const HybridAnimeTVHeader: React.FC<HybridAnimeTVHeaderProps> = ({
                 <div className="flex items-center text-gray-300 text-sm">
                   <Users className="w-4 h-4 mr-2" />
                   <span className="font-medium">Studio:</span>
-                  <span className="ml-2">{anime.studios.nodes.map(s => s.name).join(', ')}</span>
+                  <span className="ml-2">
+                    {anime.studios.nodes.map((s) => s.name).join(", ")}
+                  </span>
                 </div>
               </div>
             )}
-
+            
             {/* Description */}
             <div className="mb-6">
               <h3 className="text-lg font-semibold text-white mb-2">
                 {t.overview}
               </h3>
               <p className="text-gray-300 leading-relaxed">
-                {anime.description?.replace(/<[^>]*>/g, '') || t.no_description || 'No description available.'}
+                {anime.description?.replace(/<[^>]*>/g, "") ||
+                  t.no_description ||
+                  "No description available."}
               </p>
             </div>
 
             {/* Genres */}
             <div className="flex flex-wrap gap-2">
-              {anime.genres.map(genre => (
+              {anime.genres.map((genre) => (
                 <span
                   key={genre}
                   className="bg-white/20 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm"
