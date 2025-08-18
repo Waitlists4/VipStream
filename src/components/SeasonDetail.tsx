@@ -166,11 +166,11 @@ const SeasonDetail: React.FC = () => {
         </div>
 
         {/* Player Selector */}
-        <div className="absolute top-6 left-6 z-10 group relative w-32 h-10">
+        <div className="absolute top-6 left-6 z-10 relative w-32 h-10">
           <select
             value={selectedPlayer}
             onChange={(e) => setSelectedPlayer(e.target.value)}
-            className="opacity-0 group-hover:opacity-100 absolute inset-0 bg-black/70 text-white px-3 py-2 rounded-lg border border-white/20 focus:outline-none focus:ring-2 focus:ring-pink-500 appearance-none transition-opacity duration-200"
+            className="absolute inset-0 bg-black/70 text-white px-3 py-2 rounded-lg border border-white/20 focus:outline-none focus:ring-2 focus:ring-pink-500 appearance-none"
           >
             {playerConfigs.map((config) => (
               <option key={config.id} value={config.id}>

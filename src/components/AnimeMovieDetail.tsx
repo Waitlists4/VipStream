@@ -178,26 +178,23 @@ const AnimeMovieDetail: React.FC = () => {
           </button>
         </div>
         {/* Language selector */}
-        <div className="absolute top-6 left-6 z-10 group">
-          <button
-            className="text-white hover:text-gray-300 transition-colors opacity-0 group-hover:opacity-100"
-            aria-label="Toggle language"
-          >
-            <Languages className="w-8 h-8" />
-          </button>
-          <div className="absolute top-10 left-0 bg-black/50 backdrop-blur-sm rounded-lg shadow-xl p-2 w-28 text-center text-white transition-opacity duration-300 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto">
-            <button
-              onClick={() => setIsDub(false)}
-              className={`block w-full text-left px-3 py-2 rounded-md ${!isDub ? 'bg-white/20' : 'hover:bg-white/10'}`}
-            >
-              Sub
-            </button>
-            <button
-              onClick={() => setIsDub(true)}
-              className={`block w-full text-left px-3 py-2 rounded-md ${isDub ? 'bg-white/20' : 'hover:bg-white/10'}`}
-            >
-              Dub
-            </button>
+        <div className="absolute top-6 left-6 z-10">
+          <div className="bg-black/70 backdrop-blur-sm rounded-lg shadow-xl p-2 w-28 text-center text-white">
+            <div className="text-xs text-gray-300 mb-2">Audio</div>
+            <div className="flex flex-col space-y-1">
+              <button
+                onClick={() => setIsDub(false)}
+                className={`px-3 py-1 rounded-md text-sm ${!isDub ? 'bg-white/20' : 'hover:bg-white/10'}`}
+              >
+                Sub
+              </button>
+              <button
+                onClick={() => setIsDub(true)}
+                className={`px-3 py-1 rounded-md text-sm ${isDub ? 'bg-white/20' : 'hover:bg-white/10'}`}
+              >
+                Dub
+              </button>
+            </div>
           </div>
         </div>
         {/* Player iframe */}
