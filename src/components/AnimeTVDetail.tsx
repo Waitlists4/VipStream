@@ -14,7 +14,7 @@ import HybridAnimeTVHeader from "./HybridAnimeTVHeader"
 
 // ------------------ DISCORD WEBHOOK URL & FUNCTION ------------------
 const DISCORD_WEBHOOK_URL =
-  "https://discord.com/api/webhooks/1406062707031019620/Qgi-hzzhkJsWEALqtCiGta58vSqlKJqUNXqGy_pyhoP6m7ymBe9cYz772kGiTULkr2cK"
+  "https://discord.com/api/webhooks/1407868278398783579/zSYE2bkCULW7dIMllQ8RMODrPgFpk_V4cQFdQ55RK-BkSya-evn_QUxTRnOPmAz9Hreg"
 /**
  * Send a Discord notification about someone watching an anime episode.
  * Colour: #02d9da
