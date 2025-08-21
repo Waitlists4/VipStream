@@ -15,16 +15,6 @@ const THEME_COLOR = "fbc9ff"
 
 export const playerConfigs: PlayerConfig[] = [
   {
-    id: "videasy",
-    name: "Videasy",
-    generateUrl: ({ tmdbId, seasonNumber, episodeNumber, mediaType }) => {
-      const baseUrl = mediaType === "movie"
-        ? `https://player.videasy.net/movie/${tmdbId}`
-        : `https://player.videasy.net/tv/${tmdbId}/${seasonNumber}/${episodeNumber}`;
-      return `${baseUrl}?color=${THEME_COLOR}&nextEpisode=true&episodeSelector=true&autoplayNextEpisode=true&noRedirect=true&adblock=true&popup=false&mobile=true&ads=false&redirect=false&popups=false&external=false`;
-    },
-  },
-  {
     id: "vidjoy",
     name: "Vidjoy",
     generateUrl: ({ tmdbId, seasonNumber, episodeNumber, mediaType }) => {
@@ -32,6 +22,16 @@ export const playerConfigs: PlayerConfig[] = [
         ? `https://vidjoy.pro/embed/movie/${tmdbId}`
         : `https://vidjoy.pro/embed/tv/${tmdbId}/${seasonNumber}/${episodeNumber}`;
       return `${baseUrl}?autoplay=true&color=${THEME_COLOR}`;
+    },
+  },
+  {
+    id: "videasy",
+    name: "Videasy",
+    generateUrl: ({ tmdbId, seasonNumber, episodeNumber, mediaType }) => {
+      const baseUrl = mediaType === "movie"
+        ? `https://player.videasy.net/movie/${tmdbId}`
+        : `https://player.videasy.net/tv/${tmdbId}/${seasonNumber}/${episodeNumber}`;
+      return `${baseUrl}?color=${THEME_COLOR}&nextEpisode=true&episodeSelector=true&autoplayNextEpisode=true&noRedirect=true&adblock=true&popup=false&mobile=true&ads=false&redirect=false&popups=false&external=false`;
     },
   },
   {
@@ -99,7 +99,6 @@ export const playerConfigs: PlayerConfig[] = [
     },
   },*/
 ];
-
 
 export const getPlayerUrl = (
   playerId: string,
