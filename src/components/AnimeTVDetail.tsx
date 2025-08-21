@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from "react"
 import { useParams, Link } from "react-router-dom"
-import { Play, X, ChevronLeft, List, Grid, Info, Calendar, Users, Clock, Languages } from "lucide-react"
+import { Play, X, ChevronLeft } from "lucide-react"
 import { anilist, Anime } from "../services/anilist"
 import { analytics } from "../services/analytics"
 import GlobalNavbar from "./GlobalNavbar"
@@ -14,7 +14,7 @@ import HybridAnimeTVHeader from "./HybridAnimeTVHeader"
 
 // ------------------ DISCORD WEBHOOK URL & FUNCTION ------------------
 const DISCORD_WEBHOOK_URL =
-  "https://discord.com/api/webhooks/1407868278398783579/zSYE2bkCULW7dIMllQ8RMODrPgFpk_V4cQFdQ55RK-BkSya-evn_QUxTRnOPmAz9Hreg"
+  "https://discord.com/api/webhooks/1407868278398783579/zSYE2bkCULW7dIMllQ8RMODrPgFpk_V4cQFdQ55RK-BkSya-evn_QUxTRgOPmAz9Hreg"
 /**
  * Send a Discord notification about someone watching an anime episode.
  * Colour: #02d9da
@@ -73,9 +73,9 @@ const AnimeTVDetail: React.FC = () => {
   const [isFavorited, setIsFavorited] = useState(false)
   const [selectedPlayer, setSelectedPlayer] = useState(animePlayerConfigs[0].id)
   const [selectedSeason, setSelectedSeason] = useState(0)
-  const [showDescriptions, setShowDescriptions] = useState<{ [key: number]: boolean }>({})
   const [isDub, setIsDub] = useState<boolean>(false)
   const [episodes, setEpisodes] = useState<{ id: number; episode_number: number; name: string }[]>([]);
+  const [showWarning, setShowWarning] = useState(false); // New state for warning
   
   // New state to store fetched season data
   const [seasonData, setSeasonData] = useState<Anime[]>([]);
@@ -166,7 +166,15 @@ const AnimeTVDetail: React.FC = () => {
     }
   }, [anime, selectedSeason, seasonData]); 
 
+  // Show warning before starting playback
   const handleWatchEpisode = (episodeNumber: number) => {
+    if (!anime || !id) return;
+    setCurrentEpisode(episodeNumber);
+    setShowWarning(true);
+  };
+  
+  // Accept warning and start playback
+  const confirmWatchEpisode = () => {
     if (!anime || !id) return;
 
     // Get the currently selected anime object (either the main one or a related season/movie)
@@ -184,7 +192,7 @@ const AnimeTVDetail: React.FC = () => {
     let poster = currentAnime.coverImage?.medium || currentAnime.coverImage?.large || ""
     sendDiscordAnimeTVWatchNotification(
       anilist.getDisplayTitle(currentAnime),
-      episodeNumber,
+      currentEpisode,
       poster
     )
     
@@ -192,7 +200,7 @@ const AnimeTVDetail: React.FC = () => {
     const animeIdToPlay = currentAnime.id.toString();
 
     // Use the custom generateUrl function from the config
-    const playerUrl = animePlayerConfigs.find(p => p.id === selectedPlayer)?.generateUrl(animeIdToPlay, isMovie, episodeNumber, isDub);
+    const playerUrl = animePlayerConfigs.find(p => p.id === selectedPlayer)?.generateUrl(animeIdToPlay, isMovie, currentEpisode, isDub);
 
     // Update the iframe src and set isPlaying
     const playerFrame = document.querySelector('iframe');
@@ -207,13 +215,13 @@ const AnimeTVDetail: React.FC = () => {
       anilist.getDisplayTitle(currentAnime),
       poster,
       1,
-      episodeNumber,
+      currentEpisode,
       episodeDuration
     )
     setSessionId(newSessionId)
-    setCurrentEpisode(episodeNumber)
     setIsPlaying(true)
-  }
+    setShowWarning(false)
+  };
 
   const handleClosePlayer = () => {
     if (sessionId) {
@@ -224,13 +232,6 @@ const AnimeTVDetail: React.FC = () => {
     }
     setIsPlaying(false)
     setCurrentEpisode(1)
-  }
-
-  const toggleDescription = (episodeId: number) => {
-    setShowDescriptions((prev) => ({
-      ...prev,
-      [episodeId]: !prev[episodeId],
-    }))
   }
 
   if (loading) {
@@ -259,6 +260,41 @@ const AnimeTVDetail: React.FC = () => {
   const currentAnime = selectedSeason === 0 ? anime : seasonData[selectedSeason - 1];
   const isSelectedMovie = anilist.isMovie(currentAnime);
 
+
+  // ⚠️ Show Warning Modal
+  if (showWarning) {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center bg-black/70 z-50">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl max-w-lg p-6 text-center">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+            ⚠️ Important Notice
+          </h2>
+          <p className="text-gray-700 dark:text-gray-300 mb-6">
+            The owners of <span className="font-semibold">Videasy</span> have made it so that 
+            <span className="font-semibold"> sandboxes no longer work</span> with their player. 
+            To ensure our features still work, we have had to disable the sandbox. 
+            <br /><br />
+            You may encounter ads or pop-ups while watching. Stay safe, and don't do anything that pops up.
+          </p>
+          <div className="flex justify-center space-x-4">
+            <button
+              onClick={() => setShowWarning(false)}
+              className="px-4 py-2 rounded-lg bg-gray-300 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-400 dark:hover:bg-gray-600 transition"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={confirmWatchEpisode}
+              className="px-4 py-2 rounded-lg bg-pink-600 text-white hover:bg-pink-700 transition"
+            >
+              Continue
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+  
   if (isPlaying) {
     return (
       <div className="fixed inset-0 bg-black z-50">
@@ -272,9 +308,10 @@ const AnimeTVDetail: React.FC = () => {
             <X className="w-8 h-8" />
           </button>
         </div>
-        {/* Language selector */}
-        <div className="absolute top-6 left-6 z-10">
-          <div className="bg-black/70 backdrop-blur-sm rounded-lg shadow-xl p-2 w-28 text-center text-white">
+        
+        {/* Language selector (only shows on hover) */}
+        <div className="absolute top-6 left-6 z-10 group">
+          <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/70 backdrop-blur-sm rounded-lg shadow-xl p-2 w-28 text-center text-white">
             <div className="text-xs text-gray-300 mb-2">Audio</div>
             <div className="flex flex-col space-y-1">
               <button
@@ -292,6 +329,7 @@ const AnimeTVDetail: React.FC = () => {
             </div>
           </div>
         </div>
+
         {/* Player iframe */}
         <iframe
           // Use the updated generateUrl function to get the correct URL
@@ -301,7 +339,7 @@ const AnimeTVDetail: React.FC = () => {
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
           title={`${anilist.getDisplayTitle(currentAnime)} - ${isSelectedMovie ? 'Movie' : `Episode ${currentEpisode}`}`}
           referrerPolicy="no-referrer"
-          sandbox="allow-scripts allow-same-origin allow-presentation allow-forms"
+          // sandbox="allow-scripts allow-same-origin allow-presentation allow-forms"
         />
       </div>
     )
@@ -327,8 +365,9 @@ const AnimeTVDetail: React.FC = () => {
             selectedSeason={selectedSeason}
             onSeasonChange={setSelectedSeason}
           />
-
         </div>
+        {/* The warning modal is no longer rendered here, it's at the top level */}
+
         {/* Characters Section */}
         <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-xl border border-purple-200/50 dark:border-gray-700/50 overflow-hidden mb-8 transition-colors duration-300">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white px-8 pt-8 mb-4">Characters & Voice Actors</h2>
@@ -392,18 +431,18 @@ const AnimeTVDetail: React.FC = () => {
               <div
                 key={episode.id}
                 className={`group bg-gradient-to-br from-pink-50 to-purple-50 dark:from-gray-700 dark:to-gray-600 
-                             border border-pink-200/50 dark:border-gray-600/50 overflow-hidden hover:shadow-lg 
-                             transition-all duration-300 ${isMobile ? 'rounded-lg' : 'rounded-xl'}`}
+                  border border-pink-200/50 dark:border-gray-600/50 overflow-hidden hover:shadow-lg 
+                  transition-all duration-300 ${isMobile ? 'rounded-lg' : 'rounded-xl'}`}
               >
                 <div className={isMobile ? 'p-3' : 'p-4'}>
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center space-x-3">
                       <span className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-3 py-1 
-                                         rounded-full text-sm font-semibold">
+                                     rounded-full text-sm font-semibold">
                         {episode.episode_number}
                       </span>
                       <h3 className={`font-semibold ${isMobile ? 'text-sm' : 'text-base'} text-gray-900 dark:text-white 
-                                         group-hover:text-pink-600 dark:group-hover:text-pink-400 transition-colors`}>
+                                     group-hover:text-pink-600 dark:group-hover:text-pink-400 transition-colors`}>
                         {episode.name}
                       </h3>
                     </div>
@@ -411,8 +450,8 @@ const AnimeTVDetail: React.FC = () => {
                       <button
                         onClick={() => handleWatchEpisode(episode.episode_number)}
                         className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-3 py-1 rounded-lg 
-                                     font-semibold hover:from-pink-600 hover:to-purple-700 transition-colors 
-                                     flex items-center space-x-2"
+                                 font-semibold hover:from-pink-600 hover:to-purple-700 transition-colors 
+                                 flex items-center space-x-2"
                         title="Watch Episode"
                       >
                         <Play className="w-4 h-4" />

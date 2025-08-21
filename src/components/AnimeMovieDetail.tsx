@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react"
 import { useParams, Link } from "react-router-dom"
-import { Play, X, ChevronLeft, Users, Calendar, Clock, Languages } from "lucide-react"
+import { Play, X, ChevronLeft } from "lucide-react"
 import { anilist, Anime } from "../services/anilist"
 import { analytics } from "../services/analytics"
 import GlobalNavbar from "./GlobalNavbar"
@@ -54,7 +54,7 @@ const animePlayerConfigs = [
     generateUrl: (animeId: string, isDub: boolean = false) =>
       `https://player.videasy.net/anime/${animeId}?dub=${isDub}&color=fbc9ff&autoplay=true`,
   }
-];
+]
 
 const AnimeMovieDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>()
@@ -65,6 +65,7 @@ const AnimeMovieDetail: React.FC = () => {
   const [isFavorited, setIsFavorited] = useState(false)
   const [selectedPlayer, setSelectedPlayer] = useState(animePlayerConfigs[0].id)
   const [isDub, setIsDub] = useState<boolean>(false)
+  const [showWarning, setShowWarning] = useState(false)
 
   const { language } = useLanguage()
   const t = translations[language]
@@ -109,9 +110,15 @@ const AnimeMovieDetail: React.FC = () => {
     setIsFavorited(!exists)
   }
 
+  // Show warning before starting playback
   const handleWatchMovie = () => {
     if (!anime || !id) return
-    // Discord Embed: use anime cover image if available
+    setShowWarning(true)
+  }
+
+  // Accept warning and start playback
+  const confirmWatchMovie = () => {
+    if (!anime || !id) return
     let poster = anime.coverImage?.medium || anime.coverImage?.large || ""
     let releaseYear = anime.startDate?.year || anime.startDate?.toString() || ""
     sendDiscordAnimeMovieWatchNotification(
@@ -130,6 +137,7 @@ const AnimeMovieDetail: React.FC = () => {
       movieDuration
     )
     setSessionId(newSessionId)
+    setShowWarning(false)
     setIsPlaying(true)
   }
 
@@ -164,6 +172,40 @@ const AnimeMovieDetail: React.FC = () => {
     )
   }
 
+  // ⚠️ Show Warning Modal
+  if (showWarning) {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center bg-black/70 z-50">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl max-w-lg p-6 text-center">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+            ⚠️ Important Notice
+          </h2>
+          <p className="text-gray-700 dark:text-gray-300 mb-6">
+            The owners of <span className="font-semibold">Videasy</span> have made it so that 
+            <span className="font-semibold"> sandboxes no longer work</span> with their player.  
+            To ensure our features still work, we have had to disable the sandbox.  
+            <br /><br />
+            You may encounter ads or pop-ups while watching. Stay safe, and don't do anything that pops up.
+          </p>
+          <div className="flex justify-center space-x-4">
+            <button
+              onClick={() => setShowWarning(false)}
+              className="px-4 py-2 rounded-lg bg-gray-300 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-400 dark:hover:bg-gray-600 transition"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={confirmWatchMovie}
+              className="px-4 py-2 rounded-lg bg-pink-600 text-white hover:bg-pink-700 transition"
+            >
+              Continue
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   if (isPlaying) {
     return (
       <div className="fixed inset-0 bg-black z-50">
@@ -177,26 +219,27 @@ const AnimeMovieDetail: React.FC = () => {
             <X className="w-8 h-8" />
           </button>
         </div>
-        {/* Language selector */}
-        <div className="absolute top-6 left-6 z-10">
-          <div className="bg-black/70 backdrop-blur-sm rounded-lg shadow-xl p-2 w-28 text-center text-white">
+        {/* Language selector (only shows on hover) */}
+        <div className="absolute top-6 left-6 z-10 group">
+          <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/70 backdrop-blur-sm rounded-lg shadow-xl p-2 w-28 text-center text-white">
             <div className="text-xs text-gray-300 mb-2">Audio</div>
             <div className="flex flex-col space-y-1">
               <button
                 onClick={() => setIsDub(false)}
-                className={`px-3 py-1 rounded-md text-sm ${!isDub ? 'bg-white/20' : 'hover:bg-white/10'}`}
+                className={`px-3 py-1 rounded-md text-sm ${!isDub ? "bg-white/20" : "hover:bg-white/10"}`}
               >
                 Sub
               </button>
               <button
                 onClick={() => setIsDub(true)}
-                className={`px-3 py-1 rounded-md text-sm ${isDub ? 'bg-white/20' : 'hover:bg-white/10'}`}
+                className={`px-3 py-1 rounded-md text-sm ${isDub ? "bg-white/20" : "hover:bg-white/10"}`}
               >
                 Dub
               </button>
             </div>
           </div>
         </div>
+
         {/* Player iframe */}
         <iframe
           src={animePlayerConfigs.find(p => p.id === selectedPlayer)?.generateUrl(id!, isDub)}
@@ -205,7 +248,6 @@ const AnimeMovieDetail: React.FC = () => {
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
           title={anilist.getDisplayTitle(anime)}
           referrerPolicy="no-referrer"
-          sandbox="allow-scripts allow-same-origin allow-presentation allow-forms"
         />
       </div>
     )
