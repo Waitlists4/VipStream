@@ -15,6 +15,16 @@ const THEME_COLOR = "fbc9ff"
 
 export const playerConfigs: PlayerConfig[] = [
   {
+    id: "vidrock",
+    name: "Vidrock",
+    generateUrl: ({ tmdbId, seasonNumber, episodeNumber, mediaType }) => {
+      const baseUrl = mediaType === "movie"
+        ? `https://vidrock.net/embed/movie/${tmdbId}`
+        : `https://vidrock.net/tv/${tmdbId}/${seasonNumber}/${episodeNumber}`;
+      return `${baseUrl}?autoplay=true&autonext=true&theme=${THEME_COLOR}&download=true`;
+    },
+  },
+  {
     id: "vidjoy",
     name: "Vidjoy",
     generateUrl: ({ tmdbId, seasonNumber, episodeNumber, mediaType }) => {
@@ -32,16 +42,6 @@ export const playerConfigs: PlayerConfig[] = [
         ? `https://player.videasy.net/movie/${tmdbId}`
         : `https://player.videasy.net/tv/${tmdbId}/${seasonNumber}/${episodeNumber}`;
       return `${baseUrl}?color=${THEME_COLOR}&nextEpisode=true&episodeSelector=true&autoplayNextEpisode=true&noRedirect=true&adblock=true&popup=false&mobile=true&ads=false&redirect=false&popups=false&external=false`;
-    },
-  },
-  {
-    id: "vidrock",
-    name: "Vidrock",
-    generateUrl: ({ tmdbId, seasonNumber, episodeNumber, mediaType }) => {
-      const baseUrl = mediaType === "movie"
-        ? `https://vidrock.net/embed/movie/${tmdbId}`
-        : `https://vidrock.net/tv/${tmdbId}/${seasonNumber}/${episodeNumber}`;
-      return `${baseUrl}?autoplay=true&autonext=true&theme=${THEME_COLOR}&download=true`;
     },
   },
   /*{
