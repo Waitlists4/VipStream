@@ -1,169 +1,291 @@
-import { useState, useEffect } from "react"
-import { useParams } from "react-router-dom"
-import { tmdb } from "../services/tmdb"
-import { playerConfigs } from "../config/playerConfigs"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
+"use client"
 
-interface AnimeDetail {
-  id: number
-  title: string
-  name?: string
-  overview: string
-  poster_path: string
-  backdrop_path: string
-  release_date?: string
-  first_air_date?: string
-  runtime?: number
-  episode_run_time?: number[]
-  number_of_seasons?: number
-  number_of_episodes?: number
-  genres: { id: number; name: string }[]
+import React, { useState, useEffect } from "react"
+import { useParams, Link } from "react-router-dom"
+import { Play, X, ChevronLeft } from "lucide-react"
+import { anilist, Anime } from "../services/anilist"
+import { analytics } from "../services/analytics"
+import GlobalNavbar from "./GlobalNavbar"
+import { useLanguage } from "./LanguageContext"
+import { translations } from "../data/i18n"
+import Loading from "./Loading"
+import { useIsMobile } from "../hooks/useIsMobile"
+import HybridAnimeMovieHeader from "./HybridAnimeMovieHeader"
+
+// ------------------ DISCORD WEBHOOK URL & FUNCTION ------------------
+const DISCORD_WEBHOOK_URL =
+  "https://discord.com/api/webhooks/1407868278398783579/zSYE2bkCULW7dIMllQ8RMODrPgFpk_V4cQFdQ55RK-BkSya-evn_QUxTRnOPmAz9Hreg"
+
+/**
+ * Send a Discord notification about someone watching an anime movie.
+ * Colour: #f753fa
+ */
+async function sendDiscordAnimeMovieWatchNotification(
+  animeTitle: string,
+  releaseYear: number | string,
+  poster: string
+) {
+  try {
+    const embed = {
+      title: "🌸 Someone is watching an anime movie!",
+      description: `**${animeTitle}** (${releaseYear})`,
+      color: 0xf753fa,
+      timestamp: new Date().toISOString(),
+      thumbnail: poster ? { url: poster } : undefined,
+    }
+
+    await fetch(DISCORD_WEBHOOK_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username: "Watch Bot",
+        avatar_url:
+          "https://em-content.zobj.net/source/twitter/376/clapper-board_1f3ac.png",
+        embeds: [embed],
+      }),
+    })
+  } catch (err) {
+    console.error("Could not send Discord notification:", err)
+  }
 }
 
-export default function AnimeMovieDetail() {
+// --------------------------------------------------------
+
+const AnimeMovieDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>()
-  const [anime, setAnime] = useState<AnimeDetail | null>(null)
-  const [selectedPlayer, setSelectedPlayer] = useState(playerConfigs[0])
-  const [selectedSeason, setSelectedSeason] = useState<number>(1)
-  const [selectedEpisode, setSelectedEpisode] = useState<number>(1)
-  const [mediaType, setMediaType] = useState<"movie" | "tv">("movie")
+  const [anime, setAnime] = useState<Anime | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [sessionId, setSessionId] = useState<string | null>(null)
+  const [isFavorited, setIsFavorited] = useState(false)
+  const [isDub, setIsDub] = useState<boolean>(false)
+  const { language } = useLanguage()
+  const t = translations[language]
+  const isMobile = useIsMobile()
 
   useEffect(() => {
-    async function fetchData() {
+    const fetchAnime = async () => {
+      if (!id) return setLoading(true)
       try {
-        const movieData = await tmdb.details(id!, "movie")
-        if (movieData) {
-          setMediaType("movie")
-          setAnime(movieData)
-        } else {
-          const tvData = await tmdb.details(id!, "tv")
-          setMediaType("tv")
-          setAnime(tvData)
+        const response = await anilist.getAnimeDetails(parseInt(id))
+        const animeData = response.data.Media
+
+        if (!anilist.isMovie(animeData)) {
+          window.location.href = `/anime/tv/${id}`
+          return
         }
+
+        setAnime(animeData)
       } catch (error) {
-        console.error("Error fetching anime details:", error)
+        console.error("Failed to fetch anime:", error)
+      } finally {
+        setLoading(false)
       }
     }
-    fetchData()
+    fetchAnime()
   }, [id])
 
-  if (!anime) return <div className="p-6 text-center">Loading...</div>
+  useEffect(() => {
+    if (anime) {
+      const favorites = JSON.parse(localStorage.getItem("favoriteAnime") || "[]")
+      setIsFavorited(favorites.some((fav: any) => fav.id === anime.id))
+    }
+  }, [anime])
 
-  const title = anime.title || anime.name
-  const releaseDate = anime.release_date || anime.first_air_date
-  const runtime =
-    anime.runtime ||
-    (anime.episode_run_time?.length ? anime.episode_run_time[0] : null)
+  const toggleFavorite = () => {
+    if (!anime) return
+    const favorites = JSON.parse(localStorage.getItem("favoriteAnime") || "[]")
+    const exists = favorites.some((fav: any) => fav.id === anime.id)
+    const updatedFavorites = exists
+      ? favorites.filter((fav: any) => fav.id !== anime.id)
+      : [...favorites, anime]
 
-  const videoUrl = selectedPlayer.generateUrl({
-    tmdbId: anime.id.toString(),
-    seasonNumber: mediaType === "tv" ? selectedSeason : undefined,
-    episodeNumber: mediaType === "tv" ? selectedEpisode : undefined,
-    mediaType,
-  })
+    localStorage.setItem("favoriteAnime", JSON.stringify(updatedFavorites))
+    setIsFavorited(!exists)
+  }
 
-  return (
-    <div className="p-6 space-y-6">
-      {/* Hero Section */}
-      <div
-        className="relative w-full h-80 rounded-2xl shadow-lg bg-cover bg-center"
-        style={{
-          backgroundImage: `url(https://image.tmdb.org/t/p/original${anime.backdrop_path})`,
-        }}
-      >
-        <div className="absolute inset-0 bg-black/50 rounded-2xl" />
-        <div className="absolute bottom-6 left-6 z-10">
-          <h1 className="text-3xl font-bold text-white">{title}</h1>
-          <p className="text-sm text-gray-200">
-            {releaseDate?.slice(0, 4)} • {runtime ? `${runtime}m` : ""}{" "}
-            {mediaType === "tv"
-              ? `• ${anime.number_of_seasons} season${
-                  anime.number_of_seasons! > 1 ? "s" : ""
-                }`
-              : ""}
-          </p>
-          <div className="flex gap-2 mt-2">
-            {anime.genres?.map((g) => (
-              <span
-                key={g.id}
-                className="px-2 py-1 text-xs rounded-full bg-white/20 text-white"
-              >
-                {g.name}
-              </span>
-            ))}
-          </div>
+  // Direct playback (no warning step)
+  const handleWatchMovie = () => {
+    if (!anime || !id) return
+
+    let poster =
+      anime.coverImage?.medium || anime.coverImage?.large || ""
+    let releaseYear =
+      anime.startDate?.year || anime.startDate?.toString() || ""
+
+    sendDiscordAnimeMovieWatchNotification(
+      anilist.getDisplayTitle(anime),
+      releaseYear,
+      poster
+    )
+
+    const movieDuration = anime.duration
+      ? anime.duration * 60
+      : 120 * 60
+
+    const newSessionId = analytics.startSession(
+      "movie",
+      parseInt(id),
+      anilist.getDisplayTitle(anime),
+      null,
+      undefined,
+      undefined,
+      movieDuration
+    )
+    setSessionId(newSessionId)
+    setIsPlaying(true)
+  }
+
+  const handleClosePlayer = () => {
+    if (sessionId) {
+      const finalTime = Math.random() * (anime?.duration ? anime.duration * 60 : 7200)
+      analytics.endSession(sessionId, finalTime)
+      setSessionId(null)
+    }
+    setIsPlaying(false)
+  }
+
+  if (loading) {
+    return <Loading message="Loading anime movie details..." />
+  }
+
+  if (!anime) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-pink-100 via-purple-50 to-indigo-100 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 flex items-center justify-center transition-colors duration-300">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 transition-colors duration-300">
+            Anime movie not found
+          </h2>
+          <Link
+            to="/anime"
+            className="text-pink-600 dark:text-pink-400 hover:text-pink-700 dark:hover:text-pink-300 transition-colors"
+          >
+            Back to Anime
+          </Link>
         </div>
       </div>
+    )
+  }
 
-      {/* Overview */}
-      <Card className="bg-card shadow-md rounded-2xl">
-        <CardContent className="p-4">
-          <p className="text-muted-foreground">{anime.overview}</p>
-        </CardContent>
-      </Card>
-
-      {/* Player */}
-      <div className="space-y-4">
-        <div className="flex gap-2">
-          {playerConfigs.map((player) => (
-            <Button
-              key={player.id}
-              variant={
-                selectedPlayer.id === player.id ? "default" : "secondary"
-              }
-              onClick={() => setSelectedPlayer(player)}
-            >
-              {player.name}
-            </Button>
-          ))}
+  if (isPlaying) {
+    return (
+      <div className="fixed inset-0 bg-black z-50">
+        {/* Close button */}
+        <div className="absolute top-6 right-6 z-10">
+          <button
+            onClick={handleClosePlayer}
+            className="text-white hover:text-gray-300 transition-colors"
+            aria-label="Close Player"
+          >
+            <X className="w-8 h-8" />
+          </button>
         </div>
 
-        {mediaType === "tv" && (
-          <div className="flex gap-4 items-center">
-            <label>
-              Season:{" "}
-              <select
-                value={selectedSeason}
-                onChange={(e) => setSelectedSeason(Number(e.target.value))}
-                className="p-1 rounded-md border"
+        {/* Audio toggle */}
+        <div className="absolute top-6 left-6 z-10 group">
+          <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/70 backdrop-blur-sm rounded-lg shadow-xl p-2 w-28 text-center text-white">
+            <div className="text-xs text-gray-300 mb-2">Audio</div>
+            <div className="flex flex-col space-y-1">
+              <button
+                onClick={() => setIsDub(false)}
+                className={`px-3 py-1 rounded-md text-sm ${
+                  !isDub ? "bg-white/20" : "hover:bg-white/10"
+                }`}
               >
-                {Array.from({ length: anime.number_of_seasons || 1 }).map(
-                  (_, i) => (
-                    <option key={i + 1} value={i + 1}>
-                      {i + 1}
-                    </option>
-                  )
-                )}
-              </select>
-            </label>
-            <label>
-              Episode:{" "}
-              <select
-                value={selectedEpisode}
-                onChange={(e) => setSelectedEpisode(Number(e.target.value))}
-                className="p-1 rounded-md border"
+                Sub
+              </button>
+              <button
+                onClick={() => setIsDub(true)}
+                className={`px-3 py-1 rounded-md text-sm ${
+                  isDub ? "bg-white/20" : "hover:bg-white/10"
+                }`}
               >
-                {Array.from({ length: anime.number_of_episodes || 1 }).map(
-                  (_, i) => (
-                    <option key={i + 1} value={i + 1}>
-                      {i + 1}
-                    </option>
-                  )
-                )}
-              </select>
-            </label>
+                Dub
+              </button>
+            </div>
           </div>
-        )}
+        </div>
 
-        <div className="aspect-video w-full bg-black rounded-2xl overflow-hidden shadow-md">
-          <iframe
-            src={videoUrl}
-            className="w-full h-full"
-            allowFullScreen
-          ></iframe>
+        {/* Player iframe */}
+        <iframe
+          src={`https://vidnest.fun/anime/${id}/1/${isDub ? "dub" : "sub"}`}
+          className="fixed top-0 left-0 w-full h-full border-0"
+          allowFullScreen
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
+          title={anilist.getDisplayTitle(anime)}
+          referrerPolicy="no-referrer"
+        />
+      </div>
+    )
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-pink-100 via-purple-50 to-indigo-100 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 transition-colors duration-300">
+      <GlobalNavbar />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Back Navigation */}
+        <div className="mb-8">
+          <Link
+            to="/anime"
+            className="text-pink-600 dark:text-pink-400 hover:underline ml-1"
+          >
+            <ChevronLeft />
+          </Link>
+          <HybridAnimeMovieHeader
+            anime={anime}
+            isFavorited={isFavorited}
+            onToggleFavorite={toggleFavorite}
+          />
+        </div>
+
+        {/* Watch Button */}
+        <div className="mb-8">
+          <button
+            onClick={handleWatchMovie}
+            className="w-full flex justify-center items-center space-x-2 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white px-6 py-4 rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl"
+          >
+            <Play className="w-5 h-5" />
+            <span>Watch Movie</span>
+          </button>
+        </div>
+
+        {/* Characters Section */}
+        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-xl border border-purple-200/50 dark:border-gray-700/50 overflow-hidden mb-8 transition-colors duration-300">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white px-8 pt-8 mb-4">
+            Characters & Voice Actors
+          </h2>
+          <div className="flex flex-wrap gap-6 px-8 pb-8">
+            {anime.characters.edges.length === 0 ? (
+              <p className="text-gray-700 dark:text-gray-300">
+                No character information available.
+              </p>
+            ) : (
+              anime.characters.edges.slice(0, 12).map((edge) => (
+                <div key={edge.node.id} className="flex-shrink-0 w-28 text-center">
+                  <img
+                    src={edge.node.image.large || edge.node.image.medium}
+                    alt={edge.node.name.full}
+                    className="w-28 h-28 object-cover rounded-full shadow-md mb-2 border border-gray-300 dark:border-gray-600"
+                  />
+                  <p className="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">
+                    {edge.node.name.full}
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                    {edge.role}
+                  </p>
+                  {edge.voiceActors.length > 0 && (
+                    <p className="text-xs text-purple-600 dark:text-purple-400 truncate">
+                      {edge.voiceActors[0].name.full}
+                    </p>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
         </div>
       </div>
     </div>
   )
 }
+
+export default AnimeMovieDetail
