@@ -67,7 +67,6 @@ const TVDetail: React.FC = () => {
   const [recentlyViewedMovies, setRecentlyViewedMovies] = useState<any[]>([])
   const [isFavorited, setIsFavorited] = useState(false)
   const [cast, setCast] = React.useState([])
-  const [selectedPlayer, setSelectedPlayer] = useState(playerConfigs[0].id)
   const [seasonCast, setSeasonCast] = React.useState<any[]>([])
   const { language } = useLanguage()
 
@@ -378,33 +377,15 @@ const TVDetail: React.FC = () => {
           </button>
         </div>
 
-        {/* Player Selector */}
-        <div className="absolute top-6 left-6 z-10 relative w-32 h-10">
-          <select
-            value={selectedPlayer}
-            onChange={(e) => setSelectedPlayer(e.target.value)}
-            className="absolute inset-0 bg-black/70 text-white px-3 py-2 rounded-lg border border-white/20 focus:outline-none focus:ring-2 focus:ring-pink-500 appearance-none"
-          >
-            {playerConfigs.map((config) => (
-              <option key={config.id} value={config.id}>
-                {config.name}
-              </option>
-            ))}
-          </select>
-        </div>
 
         {/* Player iframe */}
         <iframe
-          src={getPlayerUrl(selectedPlayer, id!, "tv", currentEpisode.season_number, currentEpisode.episode_number)}
+          src={getPlayerUrl("vidnest", id!, "tv", currentEpisode.season_number, currentEpisode.episode_number)}
           className="fixed top-0 left-0 w-full h-full border-0"
           allowFullScreen
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
           title={`${show.name} - S${currentEpisode.season_number}E${currentEpisode.episode_number}`}
           referrerPolicy="no-referrer"
-          sandbox="allow-scripts allow-same-origin allow-presentation allow-forms"
-          style={{
-            colorScheme: "normal",
-          }}
         />
       </div>
     );

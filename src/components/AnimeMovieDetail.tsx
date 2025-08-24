@@ -47,15 +47,6 @@ async function sendDiscordAnimeMovieWatchNotification(
 }
 // --------------------------------------------------------
 
-const animePlayerConfigs = [
-  {
-    id: "videasy",
-    name: "Videasy",
-    generateUrl: (animeId: string, isDub: boolean = false) =>
-      `https://player.videasy.net/anime/${animeId}?dub=${isDub}&color=fbc9ff&autoplay=true`,
-  }
-]
-
 const AnimeMovieDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>()
   const [anime, setAnime] = useState<Anime | null>(null)
@@ -63,7 +54,6 @@ const AnimeMovieDetail: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState(false)
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [isFavorited, setIsFavorited] = useState(false)
-  const [selectedPlayer, setSelectedPlayer] = useState(animePlayerConfigs[0].id)
   const [isDub, setIsDub] = useState<boolean>(false)
   const [showWarning, setShowWarning] = useState(false)
 
@@ -181,11 +171,7 @@ const AnimeMovieDetail: React.FC = () => {
             ⚠️ Important Notice
           </h2>
           <p className="text-gray-700 dark:text-gray-300 mb-6">
-            The owners of <span className="font-semibold">Videasy</span> have made it so that 
-            <span className="font-semibold"> sandboxes no longer work</span> with their player.  
-            To ensure our features still work, we have had to disable the sandbox.  
-            <br /><br />
-            You may encounter ads or pop-ups while watching. Stay safe, and don't do anything that pops up.
+            You may encounter ads or pop-ups while watching. Stay safe, and don't click on anything that pops up.
           </p>
           <div className="flex justify-center space-x-4">
             <button
@@ -219,6 +205,7 @@ const AnimeMovieDetail: React.FC = () => {
             <X className="w-8 h-8" />
           </button>
         </div>
+        
         {/* Language selector (only shows on hover) */}
         <div className="absolute top-6 left-6 z-10 group">
           <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/70 backdrop-blur-sm rounded-lg shadow-xl p-2 w-28 text-center text-white">
@@ -242,7 +229,7 @@ const AnimeMovieDetail: React.FC = () => {
 
         {/* Player iframe */}
         <iframe
-          src={animePlayerConfigs.find(p => p.id === selectedPlayer)?.generateUrl(id!, isDub)}
+          src={`https://vidnest.fun/anime/${id}/1/${isDub ? 'dub' : 'sub'}`}
           className="fixed top-0 left-0 w-full h-full border-0"
           allowFullScreen
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"

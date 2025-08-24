@@ -60,7 +60,6 @@ const MovieDetail: React.FC = () => {
   const [cast, setCast] = useState<
     { id: number; name: string; character: string; profile_path: string | null }[]
   >([])
-  const [selectedPlayer, setSelectedPlayer] = useState(playerConfigs[0].id)
   const { language } = useLanguage()
   const t = translations[language]
 
@@ -232,26 +231,12 @@ const MovieDetail: React.FC = () => {
             <X className="w-8 h-8" />
           </button>
         </div>
-        <div className="absolute top-6 left-6 z-10 relative w-32 h-10">
-          <select
-            value={selectedPlayer}
-            onChange={(e) => setSelectedPlayer(e.target.value)}
-            className="absolute inset-0 bg-black/70 text-white px-3 py-2 rounded-lg border border-white/20 focus:outline-none focus:ring-2 focus:ring-pink-500 appearance-none"
-          >
-            {playerConfigs.map((config) => (
-              <option key={config.id} value={config.id}>
-                {config.name}
-              </option>
-            ))}
-          </select>
-        </div>
         <iframe
-          src={getPlayerUrl(selectedPlayer, id!, "movie")}
+          src={getPlayerUrl("vidnest", id!, "movie")}
           className="fixed top-0 left-0 w-full h-full border-0"
           allowFullScreen
           title={movie.title}
           referrerPolicy="no-referrer"
-          sandbox="allow-scripts allow-same-origin allow-presentation allow-forms"
         />
       </div>
     )

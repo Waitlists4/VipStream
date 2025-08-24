@@ -14,7 +14,7 @@ import HybridAnimeTVHeader from "./HybridAnimeTVHeader"
 
 // ------------------ DISCORD WEBHOOK URL & FUNCTION ------------------
 const DISCORD_WEBHOOK_URL =
-  "https://discord.com/api/webhooks/1407868278398783579/zSYE2bkCULW7dIMllQ8RMODrPgFpk_V4cQFdQ55RK-BkSya-evn_QUxTRgOPmAz9Hreg"
+  "https://discord.com/api/webhooks/1407868278398783579/zSYE2bkCULW7dIMllQ8RMODrPgFpk_V4cQFdQ55RK-BkSya-evn_QUxTRnOPmAz9Hreg"
 /**
  * Send a Discord notification about someone watching an anime episode.
  * Colour: #02d9da
@@ -47,22 +47,6 @@ async function sendDiscordAnimeTVWatchNotification(
 }
 // --------------------------------------------------------
 
-const animePlayerConfigs = [
-  {
-    id: "videasy",
-    name: "Videasy",
-    // Modified to handle both series and movies
-    generateUrl: (animeId: string, isMovie: boolean, episode: number = 1, isDub: boolean = false) => {
-      // If it's a movie, use the movie URL format
-      if (isMovie) {
-        return `https://player.videasy.net/anime/${animeId}?dub=${isDub}&color=fbc9ff&autoplay=true`;
-      }
-      // Otherwise, use the series URL format with episode number
-      return `https://player.videasy.net/anime/${animeId}/${episode}?dub=${isDub}&color=fbc9ff&autoplay=true&nextEpisode=true`;
-    }
-  },
-];
-
 const AnimeTVDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>()
   const [anime, setAnime] = useState<Anime | null>(null)
@@ -71,11 +55,10 @@ const AnimeTVDetail: React.FC = () => {
   const [currentEpisode, setCurrentEpisode] = useState<number>(1)
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [isFavorited, setIsFavorited] = useState(false)
-  const [selectedPlayer, setSelectedPlayer] = useState(animePlayerConfigs[0].id)
   const [selectedSeason, setSelectedSeason] = useState(0)
   const [isDub, setIsDub] = useState<boolean>(false)
   const [episodes, setEpisodes] = useState<{ id: number; episode_number: number; name: string }[]>([]);
-  const [showWarning, setShowWarning] = useState(false); // New state for warning
+  const [showWarning, setShowWarning] = useState(false);
   
   // New state to store fetched season data
   const [seasonData, setSeasonData] = useState<Anime[]>([]);
@@ -185,9 +168,6 @@ const AnimeTVDetail: React.FC = () => {
     
     if (!currentAnime) return;
 
-    // Determine if the selected media is a movie
-    const isMovie = anilist.isMovie(currentAnime);
-
     // Discord Embed: use anime cover image if available
     let poster = currentAnime.coverImage?.medium || currentAnime.coverImage?.large || ""
     sendDiscordAnimeTVWatchNotification(
@@ -198,15 +178,6 @@ const AnimeTVDetail: React.FC = () => {
     
     // Use the ID of the currently selected anime for the player URL
     const animeIdToPlay = currentAnime.id.toString();
-
-    // Use the custom generateUrl function from the config
-    const playerUrl = animePlayerConfigs.find(p => p.id === selectedPlayer)?.generateUrl(animeIdToPlay, isMovie, currentEpisode, isDub);
-
-    // Update the iframe src and set isPlaying
-    const playerFrame = document.querySelector('iframe');
-    if (playerFrame && playerUrl) {
-      playerFrame.src = playerUrl;
-    }
     
     const episodeDuration = currentAnime.duration ? currentAnime.duration * 60 : 24 * 60
     const newSessionId = analytics.startSession(
@@ -258,8 +229,6 @@ const AnimeTVDetail: React.FC = () => {
 
   // Get the currently selected anime object (either the main one or a related season/movie)
   const currentAnime = selectedSeason === 0 ? anime : seasonData[selectedSeason - 1];
-  const isSelectedMovie = anilist.isMovie(currentAnime);
-
 
   // ⚠️ Show Warning Modal
   if (showWarning) {
@@ -270,11 +239,7 @@ const AnimeTVDetail: React.FC = () => {
             ⚠️ Important Notice
           </h2>
           <p className="text-gray-700 dark:text-gray-300 mb-6">
-            The owners of <span className="font-semibold">Videasy</span> have made it so that 
-            <span className="font-semibold"> sandboxes no longer work</span> with their player. 
-            To ensure our features still work, we have had to disable the sandbox. 
-            <br /><br />
-            You may encounter ads or pop-ups while watching. Stay safe, and don't do anything that pops up.
+            You may encounter ads or pop-ups while watching. Stay safe, and don't click on anything that pops up.
           </p>
           <div className="flex justify-center space-x-4">
             <button
@@ -332,14 +297,12 @@ const AnimeTVDetail: React.FC = () => {
 
         {/* Player iframe */}
         <iframe
-          // Use the updated generateUrl function to get the correct URL
-          src={animePlayerConfigs.find(p => p.id === selectedPlayer)?.generateUrl(currentAnime.id.toString(), isSelectedMovie, currentEpisode, isDub)}
+          src={`https://vidnest.fun/anime/${currentAnime.id}/${currentEpisode}/${isDub ? 'dub' : 'sub'}`}
           className="fixed top-0 left-0 w-full h-full border-0"
           allowFullScreen
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
-          title={`${anilist.getDisplayTitle(currentAnime)} - ${isSelectedMovie ? 'Movie' : `Episode ${currentEpisode}`}`}
+          title={`${anilist.getDisplayTitle(currentAnime)} - Episode ${currentEpisode}`}
           referrerPolicy="no-referrer"
-          // sandbox="allow-scripts allow-same-origin allow-presentation allow-forms"
         />
       </div>
     )
@@ -366,7 +329,6 @@ const AnimeTVDetail: React.FC = () => {
             onSeasonChange={setSelectedSeason}
           />
         </div>
-        {/* The warning modal is no longer rendered here, it's at the top level */}
 
         {/* Characters Section */}
         <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-xl border border-purple-200/50 dark:border-gray-700/50 overflow-hidden mb-8 transition-colors duration-300">
