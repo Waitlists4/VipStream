@@ -173,6 +173,111 @@ class AniListService {
     }
   }
 
+  async getTrendingAnime(page = 1, perPage = 20, format?: string): Promise<AnimeSearchResponse> {
+    const query = `
+      query ($page: Int, $perPage: Int, $format: MediaFormat) {
+        Page(page: $page, perPage: $perPage) {
+          pageInfo {
+            total
+            currentPage
+            lastPage
+            hasNextPage
+            perPage
+          }
+          media(type: ANIME, sort: TRENDING_DESC, format: $format) {
+            id
+            title {
+              romaji
+              english
+              native
+            }
+            format
+            status
+            episodes
+            duration
+            season
+            seasonYear
+            averageScore
+            popularity
+            genres
+            coverImage {
+              large
+              medium
+              color
+            }
+            bannerImage
+            startDate {
+              year
+              month
+              day
+            }
+            studios {
+              nodes {
+                id
+                name
+              }
+            }
+            source
+          }
+        }
+      }
+    `;
+
+    return this.query(query, { page, perPage, format });
+  }
+
+  async getPopularAnime(page = 1, perPage = 20, format?: string): Promise<AnimeSearchResponse> {
+    const query = `
+      query ($page: Int, $perPage: Int, $format: MediaFormat) {
+        Page(page: $page, perPage: $perPage) {
+          pageInfo {
+            total
+            currentPage
+            lastPage
+            hasNextPage
+            perPage
+          }
+          media(type: ANIME, sort: POPULARITY_DESC, format: $format) {
+            id
+            title {
+              romaji
+              english
+              native
+            }
+            format
+            status
+            episodes
+            duration
+            season
+            seasonYear
+            averageScore
+            popularity
+            genres
+            coverImage {
+              large
+              medium
+              color
+            }
+            bannerImage
+            startDate {
+              year
+              month
+              day
+            }
+            studios {
+              nodes {
+                id
+                name
+              }
+            }
+            source
+          }
+        }
+      }
+    `;
+
+    return this.query(query, { page, perPage, format });
+  }
   async searchAnime(searchQuery: string, page = 1, perPage = 20): Promise<AnimeSearchResponse> {
     const query = `
       query ($search: String, $page: Int, $perPage: Int) {
@@ -226,111 +331,6 @@ class AniListService {
     return this.query(query, { search: searchQuery, page, perPage });
   }
 
-  async getTrendingAnime(page = 1, perPage = 20): Promise<AnimeSearchResponse> {
-    const query = `
-      query ($page: Int, $perPage: Int) {
-        Page(page: $page, perPage: $perPage) {
-          pageInfo {
-            total
-            currentPage
-            lastPage
-            hasNextPage
-            perPage
-          }
-          media(type: ANIME, sort: TRENDING_DESC) {
-            id
-            title {
-              romaji
-              english
-              native
-            }
-            format
-            status
-            episodes
-            duration
-            season
-            seasonYear
-            averageScore
-            popularity
-            genres
-            coverImage {
-              large
-              medium
-              color
-            }
-            bannerImage
-            startDate {
-              year
-              month
-              day
-            }
-            studios {
-              nodes {
-                id
-                name
-              }
-            }
-            source
-          }
-        }
-      }
-    `;
-
-    return this.query(query, { page, perPage });
-  }
-
-  async getPopularAnime(page = 1, perPage = 20): Promise<AnimeSearchResponse> {
-    const query = `
-      query ($page: Int, $perPage: Int) {
-        Page(page: $page, perPage: $perPage) {
-          pageInfo {
-            total
-            currentPage
-            lastPage
-            hasNextPage
-            perPage
-          }
-          media(type: ANIME, sort: POPULARITY_DESC) {
-            id
-            title {
-              romaji
-              english
-              native
-            }
-            format
-            status
-            episodes
-            duration
-            season
-            seasonYear
-            averageScore
-            popularity
-            genres
-            coverImage {
-              large
-              medium
-              color
-            }
-            bannerImage
-            startDate {
-              year
-              month
-              day
-            }
-            studios {
-              nodes {
-                id
-                name
-              }
-            }
-            source
-          }
-        }
-      }
-    `;
-
-    return this.query(query, { page, perPage });
-  }
 
   async getAnimeDetails(id: number): Promise<AnimeDetailsResponse> {
     const query = `
