@@ -57,18 +57,14 @@ const AnimeTVDetail: React.FC = () => {
   const [isFavorited, setIsFavorited] = useState(false)
   const [selectedSeason, setSelectedSeason] = useState(0)
   const [isDub, setIsDub] = useState<boolean>(false)
-  const [episodes, setEpisodes] = useState<{ id: number; episode_number: number; name: string }[]>([]);
-  const [showWarning, setShowWarning] = useState(false);
-  
-  // New state to store fetched season data
-  const [seasonData, setSeasonData] = useState<Anime[]>([]);
+  const [episodes, setEpisodes] = useState<{ id: number; episode_number: number; name: string }[]>([])
+  const [seasonData, setSeasonData] = useState<Anime[]>([])
 
-  // Use useMemo to prevent re-calculating seasons on every render
   const seasons = useMemo(() => {
     return anime?.relations?.edges
       .filter(edge => edge.relationType === "SEQUEL" || edge.relationType === "PREQUEL")
-      .map(edge => edge.node) || [];
-  }, [anime]);
+      .map(edge => edge.node) || []
+  }, [anime])
 
   const { language } = useLanguage()
   const t = translations[language]
@@ -94,19 +90,18 @@ const AnimeTVDetail: React.FC = () => {
     }
     fetchAnime()
   }, [id])
-  
-  // Fetch detailed data for each related season
+
   useEffect(() => {
     const fetchSeasonDetails = async () => {
       if (seasons.length > 0) {
         const seasonDetails = await Promise.all(
           seasons.map(season => anilist.getAnimeDetails(season.id).then(res => res.data.Media))
-        );
-        setSeasonData(seasonDetails);
+        )
+        setSeasonData(seasonDetails)
       }
-    };
-    fetchSeasonDetails();
-  }, [seasons]); // Dependency on seasons ensures this runs only when seasons change
+    }
+    fetchSeasonDetails()
+  }, [seasons])
 
   useEffect(() => {
     if (anime) {
@@ -126,59 +121,45 @@ const AnimeTVDetail: React.FC = () => {
     setIsFavorited(!exists)
   }
 
-  // Function to generate episodes for a given season
   const generateEpisodes = (seasonIndex: number, animeData: any, seasonsDetails: any[]) => {
-    let targetAnime = seasonIndex === 0 ? animeData : seasonsDetails[seasonIndex - 1];
-    if (!targetAnime) return [];
+    let targetAnime = seasonIndex === 0 ? animeData : seasonsDetails[seasonIndex - 1]
+    if (!targetAnime) return []
 
-    const totalEpisodes = targetAnime.episodes || 0;
+    const totalEpisodes = targetAnime.episodes || 0
     return Array.from({ length: totalEpisodes }, (_, i) => ({
       id: i + 1,
       episode_number: i + 1,
       name: targetAnime.title.english
         ? `Ep ${i + 1} - ${targetAnime.title.english}`
         : `Episode ${i + 1}`,
-    }));
-  };
+    }))
+  }
 
-  // Update episodes when anime, selectedSeason, or seasonData changes
   useEffect(() => {
     if (anime) {
-      const eps = generateEpisodes(selectedSeason, anime, seasonData);
-      setEpisodes(eps);
+      const eps = generateEpisodes(selectedSeason, anime, seasonData)
+      setEpisodes(eps)
     }
-  }, [anime, selectedSeason, seasonData]); 
+  }, [anime, selectedSeason, seasonData])
 
-  // Show warning before starting playback
   const handleWatchEpisode = (episodeNumber: number) => {
-    if (!anime || !id) return;
-    setCurrentEpisode(episodeNumber);
-    setShowWarning(true);
-  };
-  
-  // Accept warning and start playback
-  const confirmWatchEpisode = () => {
-    if (!anime || !id) return;
+    if (!anime || !id) return
 
-    // Get the currently selected anime object (either the main one or a related season/movie)
-    let currentAnime = anime;
+    setCurrentEpisode(episodeNumber)
+
+    let currentAnime = anime
     if (selectedSeason > 0 && seasonData[selectedSeason - 1]) {
-      currentAnime = seasonData[selectedSeason - 1];
+      currentAnime = seasonData[selectedSeason - 1]
     }
-    
-    if (!currentAnime) return;
+    if (!currentAnime) return
 
-    // Discord Embed: use anime cover image if available
     let poster = currentAnime.coverImage?.medium || currentAnime.coverImage?.large || ""
     sendDiscordAnimeTVWatchNotification(
       anilist.getDisplayTitle(currentAnime),
-      currentEpisode,
+      episodeNumber,
       poster
     )
-    
-    // Use the ID of the currently selected anime for the player URL
-    const animeIdToPlay = currentAnime.id.toString();
-    
+
     const episodeDuration = currentAnime.duration ? currentAnime.duration * 60 : 24 * 60
     const newSessionId = analytics.startSession(
       "tv",
@@ -186,13 +167,12 @@ const AnimeTVDetail: React.FC = () => {
       anilist.getDisplayTitle(currentAnime),
       poster,
       1,
-      currentEpisode,
+      episodeNumber,
       episodeDuration
     )
     setSessionId(newSessionId)
     setIsPlaying(true)
-    setShowWarning(false)
-  };
+  }
 
   const handleClosePlayer = () => {
     if (sessionId) {
@@ -227,14 +207,11 @@ const AnimeTVDetail: React.FC = () => {
     )
   }
 
-  // Get the currently selected anime object (either the main one or a related season/movie)
-  const currentAnime = selectedSeason === 0 ? anime : seasonData[selectedSeason - 1];
+  const currentAnime = selectedSeason === 0 ? anime : seasonData[selectedSeason - 1]
 
- 
   if (isPlaying) {
     return (
       <div className="fixed inset-0 bg-black z-50">
-        {/* Close button */}
         <div className="absolute top-6 right-6 z-10">
           <button
             onClick={handleClosePlayer}
@@ -244,8 +221,7 @@ const AnimeTVDetail: React.FC = () => {
             <X className="w-8 h-8" />
           </button>
         </div>
-        
-        {/* Language selector (only shows on hover) */}
+
         <div className="absolute top-6 left-6 z-10 group">
           <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/70 backdrop-blur-sm rounded-lg shadow-xl p-2 w-28 text-center text-white">
             <div className="text-xs text-gray-300 mb-2">Audio</div>
@@ -266,7 +242,6 @@ const AnimeTVDetail: React.FC = () => {
           </div>
         </div>
 
-        {/* Player iframe */}
         <iframe
           src={`https://vidnest.fun/anime/${currentAnime.id}/${currentEpisode}/${isDub ? 'dub' : 'sub'}`}
           className="fixed top-0 left-0 w-full h-full border-0"
@@ -300,55 +275,19 @@ const AnimeTVDetail: React.FC = () => {
             onSeasonChange={setSelectedSeason}
           />
         </div>
-
-        {/* Characters Section */}
-        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-xl border border-purple-200/50 dark:border-gray-700/50 overflow-hidden mb-8 transition-colors duration-300">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white px-8 pt-8 mb-4">Characters & Voice Actors</h2>
-          <div className="flex flex-wrap gap-6 px-8 pb-8">
-            {anime.characters.edges.length === 0 ? (
-              <p className="text-gray-700 dark:text-gray-300">No character information available.</p>
-            ) : (
-              anime.characters.edges.slice(0, 12).map((edge) => (
-                <div key={edge.node.id} className="flex-shrink-0 w-28 text-center">
-                  <img
-                    src={edge.node.image.large || edge.node.image.medium}
-                    alt={edge.node.name.full}
-                    className="w-28 h-28 object-cover rounded-full shadow-md mb-2 border border-gray-300 dark:border-gray-600"
-                  />
-                  <p className="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">
-                    {edge.node.name.full}
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                    {edge.role}
-                  </p>
-                  {edge.voiceActors.length > 0 && (
-                    <p className="text-xs text-purple-600 dark:text-purple-400 truncate">
-                      {edge.voiceActors[0].name.full}
-                    </p>
-                  )}
-                </div>
-              ))
-            )}
-          </div>
-        </div>
         {/* Episodes Section */}
         <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-xl border border-pink-200/50 dark:border-gray-700/50 p-6 transition-colors duration-300">
           <div className={`flex items-center justify-between mb-6 ${isMobile ? "flex-col space-y-4" : ""}`}>
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white transition-colors duration-300">
               Episodes ({currentAnime?.episodes || 0})
             </h2>
-
-            {/* Season Selector (Top Right) */}
             {seasons.length > 0 && (
               <select
                 value={selectedSeason}
                 onChange={(e) => setSelectedSeason(Number(e.target.value))}
                 className="rounded-md border p-2 bg-gray-900 text-white"
               >
-                {/* Base Anime as season 0 */}
                 <option value={0}>{anime.title.english || anime.title.romaji || anime.title.native}</option>
-
-                {/* Map through all seasons */}
                 {seasons.map((season, index) => (
                   <option key={season.id} value={index + 1}>
                     {season.title.english || season.title.romaji || season.title.native}
@@ -356,9 +295,7 @@ const AnimeTVDetail: React.FC = () => {
                 ))}
               </select>
             )}
-
           </div>
-
           <div className={isMobile ? 'space-y-2' : 'space-y-3'}>
             {episodes.map((episode) => (
               <div
@@ -397,72 +334,6 @@ const AnimeTVDetail: React.FC = () => {
             ))}
           </div>
         </div>
-
-        {/* Relations Section */}
-        {anime.relations.edges.length > 0 && (
-          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-xl border border-indigo-200/50 dark:border-gray-700/50 p-6 mt-8 transition-colors duration-300">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Related Anime</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-              {anime.relations.edges.slice(0, 12).map((relation, index) => {
-                const relatedAnime = relation.node
-                const isMovie = relatedAnime.format === 'MOVIE'
-                const path = isMovie ? `/anime/movie/${relatedAnime.id}` : `/anime/tv/${relatedAnime.id}`
-                return (
-                  <Link
-                    key={index}
-                    to={path}
-                    className="group block bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-lg p-3 hover:shadow-lg transition-all duration-300"
-                  >
-                    <img
-                      src={relatedAnime.coverImage.medium}
-                      alt={anilist.getDisplayTitle(relatedAnime)}
-                      className="w-full aspect-[2/3] object-cover rounded-lg mb-2"
-                    />
-                    <p className="text-xs text-indigo-600 dark:text-indigo-400 font-medium mb-1">
-                      {relation.relationType}
-                    </p>
-                    <p className="text-sm font-semibold text-gray-900 dark:text-white line-clamp-2">
-                      {anilist.getDisplayTitle(relatedAnime)}
-                    </p>
-                  </Link>
-                )
-              })}
-            </div>
-          </div>
-        )}
-        {/* Recommendations Section */}
-        {anime.recommendations.nodes.length > 0 && (
-          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-xl border border-green-200/50 dark:border-gray-700/50 p-6 mt-8 transition-colors duration-300">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Recommendations</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-              {anime.recommendations.nodes.slice(0, 12).map((rec, index) => {
-                const recAnime = rec.mediaRecommendation
-                const isMovie = recAnime.format === 'MOVIE'
-                const path = isMovie ? `/anime/movie/${recAnime.id}` : `/anime/tv/${recAnime.id}`
-                return (
-                  <Link
-                    key={index}
-                    to={path}
-                    className="group block bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg p-3 hover:shadow-lg transition-all duration-300"
-                  >
-                    <img
-                      src={recAnime.coverImage.medium}
-                      alt={anilist.getDisplayTitle(recAnime)}
-                      className="w-full aspect-[2/3] object-cover rounded-lg mb-2"
-                    />
-                    <p className="text-sm font-semibold text-gray-900 dark:text-white line-clamp-2 mb-1">
-                      {anilist.getDisplayTitle(recAnime)}
-                    </p>
-                    <div className="flex items-center text-xs text-gray-600 dark:text-gray-400">
-                      <span className="text-yellow-500">★</span>
-                      <span className="ml-1">{anilist.formatScore(recAnime.averageScore)}</span>
-                    </div>
-                  </Link>
-                )
-              })}
-            </div>
-          </div>
-        )}
       </div>
     </div>
   )
