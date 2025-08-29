@@ -222,6 +222,28 @@ const AnimeTVDetail: React.FC = () => {
           </button>
         </div>
 
+        {/* Language selector (only shows on hover) */}
+        <div className="absolute top-6 left-6 z-10 group">
+          <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/70 backdrop-blur-sm rounded-lg shadow-xl p-2 w-28 text-center text-white">
+            <div className="text-xs text-gray-300 mb-2">Audio</div>
+            <div className="flex flex-col space-y-1">
+              <button
+                onClick={() => setIsDub(false)}
+                className={`px-3 py-1 rounded-md text-sm ${!isDub ? 'bg-white/20' : 'hover:bg-white/10'}`}
+              >
+                Sub
+              </button>
+              <button
+                onClick={() => setIsDub(true)}
+                className={`px-3 py-1 rounded-md text-sm ${isDub ? 'bg-white/20' : 'hover:bg-white/10'}`}
+              >
+                Dub
+              </button>
+            </div>
+          </div>
+        </div>
+
+
         <iframe
           src={`https://vidnest.fun/anime/${currentAnime.id}/${currentEpisode}/${isDub ? 'dub' : 'sub'}`}
           className="fixed top-0 left-0 w-full h-full border-0"
