@@ -167,7 +167,12 @@ const SeasonDetail: React.FC = () => {
 
         {/* Player iframe */}
         <iframe
-          src={getPlayerUrl("vidnest", id!, "tv", currentEpisode.season_number, currentEpisode.episode_number)}
+          src={getPlayerUrl("vidplus", { 
+            tmdbId: id!, 
+            mediaType: "tv", 
+            seasonNumber: currentEpisode.season_number, 
+            episodeNumber: currentEpisode.episode_number 
+          })}
           className="fixed top-0 left-0 w-full h-full border-0"
           allowFullScreen
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
