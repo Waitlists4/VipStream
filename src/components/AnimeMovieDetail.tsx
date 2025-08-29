@@ -11,7 +11,6 @@ import { translations } from "../data/i18n"
 import Loading from "./Loading"
 import { useIsMobile } from "../hooks/useIsMobile"
 import HybridAnimeMovieHeader from "./HybridAnimeMovieHeader"
-import { getPlayerUrl } from "../utils/playerUtils"
 
 // ------------------ DISCORD WEBHOOK URL & FUNCTION ------------------
 const DISCORD_WEBHOOK_URL =
@@ -184,12 +183,7 @@ const AnimeMovieDetail: React.FC = () => {
 
         {/* Player iframe */}
         <iframe
-          src={getPlayerUrl("vidplus", { 
-            anilistId: id!, 
-            mediaType: "anime", 
-            episodeNumber: 1,
-            isDub: isDub 
-          })}
+          src={`https://vidnest.fun/anime/${id}/1/${isDub ? "dub" : "sub"}`}
           className="fixed top-0 left-0 w-full h-full border-0"
           allowFullScreen
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"

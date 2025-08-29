@@ -11,7 +11,6 @@ import { translations } from "../data/i18n"
 import Loading from "./Loading"
 import { useIsMobile } from "../hooks/useIsMobile"
 import HybridAnimeTVHeader from "./HybridAnimeTVHeader"
-import { getPlayerUrl } from "../utils/playerUtils"
 
 // ------------------ DISCORD WEBHOOK URL & FUNCTION ------------------
 const DISCORD_WEBHOOK_URL =
@@ -224,12 +223,7 @@ const AnimeTVDetail: React.FC = () => {
         </div>
 
         <iframe
-          src={getPlayerUrl("vidplus", { 
-            anilistId: currentAnime.id.toString(), 
-            mediaType: "anime", 
-            episodeNumber: currentEpisode,
-            isDub: isDub 
-          })}
+          src={`https://vidnest.fun/anime/${currentAnime.id}/${currentEpisode}/${isDub ? 'dub' : 'sub'}`}
           className="fixed top-0 left-0 w-full h-full border-0"
           allowFullScreen
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"

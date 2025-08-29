@@ -41,6 +41,17 @@ export const playerConfigs: PlayerConfig[] = [
       
       throw new Error(`Invalid parameters for ${mediaType}`);
     },
+  },
+  {
+    id: "vidnest",
+    name: "Vidnest",
+    generateUrl: ({ tmdbId, seasonNumber, episodeNumber, mediaType }) => {
+      if (mediaType === "movie") {
+        return `https://vidnest.fun/movie/${tmdbId}`;
+      } else {
+        return `https://vidnest.fun/tv/${tmdbId}/${seasonNumber}/${episodeNumber}`;
+      }
+    },
   }
 ];
 
