@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Film, Search, Trash2, Play, Calendar, Star, ArrowLeft, Heart, Archive, TrendingUp, Users, BarChart3, Clock, Target, Award } from 'lucide-react';
+import { Film, Search, Trash2, Play, Calendar, Star, ArrowLeft, Heart, Archive, TrendingUp, Users, BarChart3, Clock, Target, Award, Tv } from 'lucide-react';
 import { watchlistService, WatchlistMovie, WatchlistTVShow } from '../services/watchlist';
 import { tmdb } from '../services/tmdb';
 import GlobalNavbar from './GlobalNavbar';
@@ -539,7 +539,7 @@ const Vault: React.FC = () => {
                         <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{stats.showsWatched}</p>
                       </div>
                       <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-green-600 rounded-lg flex items-center justify-center">
-                        <TrendingUp className="w-6 h-6 text-white" />
+                        <Tv className="w-6 h-6 text-white" />
                       </div>
                     </div>
                   </div>
