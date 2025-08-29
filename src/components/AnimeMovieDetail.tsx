@@ -11,6 +11,7 @@ import { translations } from "../data/i18n"
 import Loading from "./Loading"
 import { useIsMobile } from "../hooks/useIsMobile"
 import HybridAnimeMovieHeader from "./HybridAnimeMovieHeader"
+import { getPlayerUrl } from "../utils/playerUtils"
 
 // ------------------ DISCORD WEBHOOK URL & FUNCTION ------------------
 const DISCORD_WEBHOOK_URL =
