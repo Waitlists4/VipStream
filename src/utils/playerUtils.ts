@@ -24,7 +24,7 @@ export const playerConfigs: PlayerConfig[] = [
         autoplay: "true",
         poster: "true",
         title: "true",
-        watchparty: "false"
+        watchparty: "false",
         mobile: "true"
       }
       )
