@@ -9,7 +9,7 @@ import { analytics } from "../services/analytics"
 import type { MovieDetails } from "../types"
 import { watchlistService } from "../services/watchlist"
 import GlobalNavbar from "./GlobalNavbar"
-import { playerConfigs, getPlayerUrl } from "../utils/playerUtils"
+import { getPlayerUrl } from "../utils/playerUtils"
 import { useLanguage } from "./LanguageContext"
 import { translations } from "../data/i18n"
 import Loading from "./Loading"
@@ -58,7 +58,7 @@ const MovieDetail: React.FC = () => {
   const [recentlyViewedTVEpisodes, setRecentlyViewedTVEpisodes] = useState({})
   const [isFavorited, setIsFavorited] = useState(false)
   const [cast, setCast] = useState<
-    { id: number; name: string; character: string; profile_path: string | null }[]
+    { id: number; name: string; character: string; profile_path: string | null; gender?: number }[]
   >([])
   const { language } = useLanguage()
   const t = translations[language]
@@ -74,27 +74,25 @@ const MovieDetail: React.FC = () => {
     if (!movie?.id) return
     const fetchCredits = async () => {
       try {
-        setLoading(true);
-        const credits = await tmdb.getMovieCredits(movie.id);
+        setLoading(true)
+        const credits = await tmdb.getMovieCredits(movie.id)
 
-        // Map cast to include gender
         const castWithGender = await Promise.all(
           (credits.cast || []).slice(0, 12).map(async (actor) => {
-            const personDetails = await tmdb.getPersonDetails(actor.id); // assumes tmdb.getPersonDetails exists
-            return { ...actor, gender: personDetails.gender }; // 1=female, 2=male
+            const personDetails = await tmdb.getPersonDetails(actor.id)
+            return { ...actor, gender: personDetails.gender }
           })
-        );
+        )
 
-        setCast(castWithGender);
+        setCast(castWithGender)
       } catch (e) {
-        console.error("Failed to load cast", e);
+        console.error("Failed to load cast", e)
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
     fetchCredits()
   }, [movie?.id])
-
 
   useEffect(() => {
     const items = JSON.parse(localStorage.getItem("recentlyViewedMovies") || "[]")
@@ -130,7 +128,15 @@ const MovieDetail: React.FC = () => {
     const exists = favorites.some((fav: any) => fav.id === movie.id)
     const updatedFavorites = exists
       ? favorites.filter((fav: any) => fav.id !== movie.id)
-      : [...favorites, { id: movie.id, title: movie.title, poster_path: movie.poster_path, release_date: movie.release_date }]
+      : [
+          ...favorites,
+          {
+            id: movie.id,
+            title: movie.title,
+            poster_path: movie.poster_path,
+            release_date: movie.release_date,
+          },
+        ]
     localStorage.setItem("favoriteMovies", JSON.stringify(updatedFavorites))
     setIsFavorited(!exists)
   }
@@ -166,7 +172,15 @@ const MovieDetail: React.FC = () => {
 
     const existing = JSON.parse(localStorage.getItem("recentlyViewedMovies") || "[]")
     const filtered = existing.filter((item: any) => item.id !== movie.id)
-    const updated = [{ id: movie.id, title: movie.title, poster_path: movie.poster_path, release_date: movie.release_date }, ...filtered]
+    const updated = [
+      {
+        id: movie.id,
+        title: movie.title,
+        poster_path: movie.poster_path,
+        release_date: movie.release_date,
+      },
+      ...filtered,
+    ]
     localStorage.setItem("recentlyViewedMovies", JSON.stringify(updated.slice(0, 10)))
     setRecentlyViewedMovies(updated.slice(0, 10))
   }
@@ -210,8 +224,13 @@ const MovieDetail: React.FC = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-100 via-purple-50 to-indigo-100 dark:from-gray-900 dark:via-purple-900 dark:to-indigo-900">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">{t.movie_not_found || "Movie not found"}</h2>
-          <Link to="/" className="text-pink-600 dark:text-pink-400 hover:text-pink-700 dark:hover:text-pink-300">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+            {t.movie_not_found || "Movie not found"}
+          </h2>
+          <Link
+            to="/"
+            className="text-pink-600 dark:text-pink-400 hover:text-pink-700 dark:hover:text-pink-300"
+          >
             {t.error_404_go_home}
           </Link>
         </div>
@@ -236,8 +255,6 @@ const MovieDetail: React.FC = () => {
           className="fixed top-0 left-0 w-full h-full border-0"
           allowFullScreen
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
-          allowFullScreen
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
           title={movie.title}
           referrerPolicy="no-referrer"
         />
@@ -251,13 +268,14 @@ const MovieDetail: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="p-8 flex-1">
           <div className="space-y-6">
-            <Link
-              to={`/`}
-              className="text-pink-600 dark:text-pink-400 hover:underline ml-1"
-            >
+            <Link to={`/`} className="text-pink-600 dark:text-pink-400 hover:underline ml-1">
               <ChevronLeft />
             </Link>
-            <HybridMovieHeader show={movie} isFavorited={isFavorited} onToggleFavorite={toggleFavorite} />
+            <HybridMovieHeader
+              show={movie}
+              isFavorited={isFavorited}
+              onToggleFavorite={toggleFavorite}
+            />
             <button
               onClick={handleWatchMovie}
               className="w-full flex justify-center items-center space-x-2 bg-pink-600 hover:bg-pink-700 text-white px-6 py-4 rounded-lg font-semibold transition-colors duration-300 shadow-lg"
@@ -278,14 +296,13 @@ const MovieDetail: React.FC = () => {
             ) : (
               <div className="flex flex-wrap gap-6 justify-start">
                 {cast.slice(0, 12).map((actor) => {
-                  // Determine profile image with gender fallback
                   const profileImage = actor.profile_path
                     ? tmdb.getImageUrl(actor.profile_path, "w185")
                     : actor.gender === 1
                     ? "/female.png"
                     : actor.gender === 2
                     ? "/male.png"
-                    : "/unknown.png";
+                    : "/unknown.png"
 
                   return (
                     <div key={actor.id} className="w-28 text-center">
@@ -301,12 +318,11 @@ const MovieDetail: React.FC = () => {
                         {actor.character}
                       </p>
                     </div>
-                  );
+                  )
                 })}
               </div>
             )}
-
-                      </div>
+          </div>
         </div>
       </div>
 
@@ -319,10 +335,18 @@ const MovieDetail: React.FC = () => {
           tabIndex={0}
           aria-label={t.boop_the_frog || "Boop the frog"}
           onKeyDown={(e) => e.key === "Enter" && handleFrogBoop()}
-            alt="Frog icon"
-            draggable={false}
-          />
-          <span className="text-white font-semibold text-lg">{frogBoops} {t.boops || "Boops"}</span>
+        >
+          <div className="flex items-center space-x-2">
+            <img
+              src="/frog.png"
+              alt="Frog icon"
+              className="w-6 h-6"
+              draggable={false}
+            />
+            <span className="text-white font-semibold text-lg">
+              {frogBoops} {t.boops || "Boops"}
+            </span>
+          </div>
         </div>
       )}
     </div>
