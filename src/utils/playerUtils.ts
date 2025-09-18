@@ -25,6 +25,7 @@ export const playerConfigs: PlayerConfig[] = [
         poster: "true",
         title: "true",
         watchparty: "false",
+        chromecast: "false",
       }
       )
       if (mediaType === "movie" && tmdbId) {
