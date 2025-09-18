@@ -174,9 +174,7 @@ const SeasonDetail: React.FC = () => {
             episodeNumber: currentEpisode.episode_number 
           })}
           className="fixed top-0 left-0 w-full h-full border-0"
-          allowFullScreen
           title={`${show.name} - S${currentEpisode.season_number}E${currentEpisode.episode_number}`}
-          sandbox="allow-scripts allow-same-origin allow-presentation allow-forms"
         />
       </div>
     );

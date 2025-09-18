@@ -200,8 +200,6 @@ const EpisodeDetail: React.FC = () => {
               episodeNumber: parseInt(episodeNumber!) 
             })}
             className="fixed top-0 left-0 w-full h-full border-0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
-            referrerPolicy="no-referrer"
           />
         </div>
       );

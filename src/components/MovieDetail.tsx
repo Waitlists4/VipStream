@@ -253,10 +253,7 @@ const MovieDetail: React.FC = () => {
         <iframe
           src={getPlayerUrl("vidplus", { tmdbId: id!, mediaType: "movie" })}
           className="fixed top-0 left-0 w-full h-full border-0"
-          allowFullScreen
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
           title={movie.title}
-          referrerPolicy="no-referrer"
         />
       </div>
     )

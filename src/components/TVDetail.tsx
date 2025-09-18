@@ -411,12 +411,7 @@ const TVDetail: React.FC = () => {
           >
             <ChevronLeft />
           </Link>
-          <HybridTVHeader
-            show={show}
-            selectedSeason={selectedSeason}
-            onSeasonChange={setSelectedSeason}
             isFavorited={isFavorited}
-            onToggleFavorite={toggleFavorite}
           />
         </div>
 
