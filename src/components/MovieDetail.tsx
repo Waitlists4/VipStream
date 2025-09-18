@@ -319,11 +319,7 @@ const MovieDetail: React.FC = () => {
           tabIndex={0}
           aria-label={t.boop_the_frog || "Boop the frog"}
           onKeyDown={(e) => e.key === "Enter" && handleFrogBoop()}
-        >
-          <img
-            src="/frog.svg"
             alt="Frog icon"
-            className={`w-10 h-10 rounded-full transition-transform duration-150 ${showBoopAnimation ? "scale-125" : "scale-100"}`}
             draggable={false}
           />
           <span className="text-white font-semibold text-lg">{frogBoops} {t.boops || "Boops"}</span>
