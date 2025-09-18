@@ -25,8 +25,7 @@ export const playerConfigs: PlayerConfig[] = [
         poster: "true",
         title: "true",
         watchparty: "false"
-      });
-
+        mobile: "true"
       if (mediaType === "movie" && tmdbId) {
         return `${baseUrl}/movie/${tmdbId}?${playerParams.toString()}`;
       } else if (mediaType === "tv" && tmdbId && seasonNumber && episodeNumber) {

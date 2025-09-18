@@ -101,7 +101,11 @@ const MobileNavbar: React.FC = () => {
                       : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-gray-700"
                   }`}
                 >
-                  <span className="text-lg">{flag}</span>
+                  <img 
+                    src={`https://flagsapi.com/${shortname === 'en' ? 'US' : 'DK'}/flat/24.png`} 
+                    alt={`${name} flag`} 
+                    className="w-4 h-4 rounded-sm"
+                  />
                   <span className="text-sm font-medium">{name}</span>
                 </button>
               ))}

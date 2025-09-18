@@ -59,8 +59,8 @@ const GlobalNavbar: React.FC = () => {
     };
 
     const getCurrentFlag = () => {
-      const currentLang = languages.find(lang => lang.shortname === language);
-      return currentLang?.flag || '🇬🇧';
+      const flagCode = language === 'en' ? 'US' : language === 'dk' ? 'DK' : 'US';
+      return `https://flagsapi.com/${flagCode}/flat/24.png`;
     };
 
     return (
@@ -70,7 +70,11 @@ const GlobalNavbar: React.FC = () => {
           className="p-2 text-gray-600 dark:text-gray-300 hover:text-pink-600 dark:hover:text-pink-400 transition-colors duration-200 flex items-center space-x-1"
           aria-label="Language selector"
         >
-          <span className="text-xl">{getCurrentFlag()}</span>
+          <img 
+            src={getCurrentFlag()} 
+            alt="Current language flag" 
+            className="w-5 h-5 rounded-sm"
+          />
           <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
         </button>
 
@@ -88,7 +92,11 @@ const GlobalNavbar: React.FC = () => {
                     : 'text-gray-900 dark:text-gray-100'
                 }`}
               >
-                <span className="text-xl">{flag}</span>
+                <img 
+                  src={`https://flagsapi.com/${shortname === 'en' ? 'US' : 'DK'}/flat/24.png`} 
+                  alt={`${name} flag`} 
+                  className="w-5 h-5 rounded-sm"
+                />
                 <span className="font-medium">{name}</span>
               </button>
             ))}
