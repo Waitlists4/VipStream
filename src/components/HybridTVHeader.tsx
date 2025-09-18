@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
-import { Play, Star, Calendar, Heart, Info, ChevronDown } from "lucide-react"
+import { Star, Heart, ChevronDown } from "lucide-react"
 import { tmdb } from "../services/tmdb"
 import type { TVDetails } from "../types"
 import { useLanguage } from "./LanguageContext"
@@ -22,7 +22,6 @@ const HybridTVHeader: React.FC<HybridTVHeaderProps> = ({
   isFavorited,
   onToggleFavorite,
 }) => {
-
   const [seasonDetails, setSeasonDetails] = useState<any | null>(null)
   const [loading, setLoading] = useState(false)
   const { language } = useLanguage()
@@ -40,11 +39,10 @@ const HybridTVHeader: React.FC<HybridTVHeaderProps> = ({
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
 
-
   useEffect(() => {
     const fetchSeasonDetails = async () => {
       if (selectedSeason === 0) return
-      
+
       setLoading(true)
       try {
         const seasonData = await tmdb.getTVSeasons(show.id, selectedSeason)
@@ -60,7 +58,6 @@ const HybridTVHeader: React.FC<HybridTVHeaderProps> = ({
   }, [show.id, selectedSeason])
 
   const getDisplayData = () => {
-    // Helper to format year range
     const formatYearRange = (startDate: string, endDate?: string) => {
       if (!startDate) return ""
       const startYear = new Date(startDate).getFullYear()
@@ -69,24 +66,20 @@ const HybridTVHeader: React.FC<HybridTVHeaderProps> = ({
     }
 
     if (selectedSeason === 0 || !seasonDetails) {
-      // Show overview mode
-      const firstYear = show.first_air_date
-      const lastYear = show.last_air_date
       return {
         title: show.name,
         overview: show.overview,
         poster: show.poster_path,
         backdrop: show.backdrop_path,
-        year: formatYearRange(firstYear, lastYear),
+        year: formatYearRange(show.first_air_date, show.last_air_date),
         rating: show.vote_average,
         genres: show.genres,
         episodeCount: show.number_of_episodes,
         seasonCount: show.number_of_seasons,
-        type: 'show'
+        type: "show",
       }
     }
 
-    // Season view
     const seasonEpisodes = seasonDetails.episodes || []
     const firstEpisode = seasonEpisodes[0]?.air_date
     const lastEpisode = seasonEpisodes[seasonEpisodes.length - 1]?.air_date || firstEpisode
@@ -101,20 +94,22 @@ const HybridTVHeader: React.FC<HybridTVHeaderProps> = ({
       genres: show.genres,
       episodeCount: seasonEpisodes.length,
       seasonCount: show.number_of_seasons,
-      type: 'season'
+      type: "season",
     }
   }
 
-
   const displayData = getDisplayData()
-  const availableSeasons = show.seasons.filter(s => s.season_number > 0)
+  const availableSeasons = show.seasons.filter((s) => s.season_number > 0)
 
   return (
     <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-900 via-purple-900 to-pink-900">
-      {/* Background Image */}
+      {/* Background */}
       <div className="absolute inset-0">
         <img
-          src={tmdb.getImageUrl(displayData.backdrop, "w1280") || tmdb.getImageUrl(displayData.poster, "w1280")}
+          src={
+            tmdb.getImageUrl(displayData.backdrop, "w1280") ||
+            tmdb.getImageUrl(displayData.poster, "w1280")
+          }
           alt={displayData.title}
           className="w-full h-full object-cover opacity-30"
         />
@@ -130,13 +125,13 @@ const HybridTVHeader: React.FC<HybridTVHeaderProps> = ({
                 style={{
                   backgroundImage: displayData.poster
                     ? `url(${tmdb.getImageUrl(displayData.poster, "w500")})`
-                    : 'linear-gradient(to bottom, rgb(219 39 119), rgb(147 51 234))',
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center'
+                    : "linear-gradient(to bottom, rgb(219 39 119), rgb(147 51 234))",
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
                 }}
                 className="w-48 h-72 md:w-64 md:h-96 rounded-xl shadow-2xl transition-transform group-hover:scale-105"
               />
-              {displayData.type === 'season' && (
+              {displayData.type === "season" && (
                 <div className="absolute top-2 left-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white px-3 py-1 rounded-full text-sm font-semibold">
                   {t.season} {selectedSeason}
                 </div>
@@ -146,24 +141,22 @@ const HybridTVHeader: React.FC<HybridTVHeaderProps> = ({
 
           {/* Content */}
           <div className="flex-1">
-            {/* Title and Controls */}
+            {/* Title and Favorite */}
             <div className="flex items-start justify-between mb-4">
               <div>
                 <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
                   {displayData.title}
                 </h1>
-                {displayData.type === 'season' && (
-                  <p className="text-lg text-gray-300">
-                    {show.name}
-                  </p>
+                {displayData.type === "season" && (
+                  <p className="text-lg text-gray-300">{show.name}</p>
                 )}
               </div>
               <button
                 onClick={onToggleFavorite}
                 className={`p-2 rounded-full transition-colors ${
-                  isFavorited 
-                    ? 'text-pink-500 bg-pink-500/20' 
-                    : 'text-white hover:text-pink-500 hover:bg-pink-500/20'
+                  isFavorited
+                    ? "text-pink-500 bg-pink-500/20"
+                    : "text-white hover:text-pink-500 hover:bg-pink-500/20"
                 }`}
               >
                 <Heart className="w-6 h-6" fill={isFavorited ? "currentColor" : "none"} />
@@ -189,13 +182,11 @@ const HybridTVHeader: React.FC<HybridTVHeaderProps> = ({
               </label>
               <div className="relative w-full md:w-64 season-dropdown">
                 <button
-                  onClick={() => setDropdownOpen(prev => !prev)}
+                  onClick={() => setDropdownOpen((prev) => !prev)}
                   className="w-full bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg px-4 py-2 text-white text-left focus:outline-none focus:ring-2 focus:ring-pink-500 flex justify-between items-center"
                 >
                   <span>
-                    {selectedSeason === 0
-                      ? "Show Overview"
-                      : `${t.season} ${selectedSeason}`}
+                    {selectedSeason === 0 ? "Show Overview" : `${t.season} ${selectedSeason}`}
                   </span>
                   <ChevronDown className="w-4 h-4 text-white opacity-70" />
                 </button>
@@ -232,19 +223,19 @@ const HybridTVHeader: React.FC<HybridTVHeaderProps> = ({
               </div>
             </div>
 
-            {/* Description */}
+            {/* Overview */}
             <div className="mb-6">
               <h3 className="text-lg font-semibold text-white mb-2">
-                {displayData.type === 'season' ? `${t.season} ${selectedSeason} ${t.overview}` : t.overview}
+                {displayData.type === "season"
+                  ? `${t.season} ${selectedSeason} ${t.overview}`
+                  : t.overview}
               </h3>
-              <p className="text-gray-300 leading-relaxed">
-                {displayData.overview}
-              </p>
+              <p className="text-gray-300 leading-relaxed">{displayData.overview}</p>
             </div>
 
             {/* Genres */}
             <div className="flex flex-wrap gap-2">
-              {displayData.genres.map(genre => (
+              {displayData.genres.map((genre) => (
                 <span
                   key={genre.id}
                   className="bg-white/20 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm"
