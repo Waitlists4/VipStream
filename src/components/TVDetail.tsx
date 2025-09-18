@@ -413,7 +413,7 @@ const TVDetail: React.FC = () => {
             </Link>
             onSeasonChange={setSelectedSeason}
             onToggleFavorite={toggleFavorite}
-          >
+          />
         </div>
 
         {/* Cast Overview */}
