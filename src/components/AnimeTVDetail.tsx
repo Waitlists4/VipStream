@@ -247,9 +247,7 @@ const AnimeTVDetail: React.FC = () => {
         <iframe
           src={`https://vidnest.fun/anime/${currentAnime.id}/${currentEpisode}/${isDub ? 'dub' : 'sub'}`}
           className="fixed top-0 left-0 w-full h-full border-0"
-          allowFullScreen
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
-          title={`${anilist.getDisplayTitle(currentAnime)} - Episode ${currentEpisode}`}
           referrerPolicy="no-referrer"
         />
       </div>

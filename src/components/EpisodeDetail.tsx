@@ -200,11 +200,7 @@ const EpisodeDetail: React.FC = () => {
               episodeNumber: parseInt(episodeNumber!) 
             })}
             className="fixed top-0 left-0 w-full h-full border-0"
-            allowFullScreen
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
-            allowFullScreen
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
-            title={`${show.name} - S${seasonNumber}E${episodeNumber}`}
             referrerPolicy="no-referrer"
           />
         </div>
