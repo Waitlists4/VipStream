@@ -405,13 +405,17 @@ const TVDetail: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Hybrid TV Header */}
         <div className="mb-8">
-            <Link
-              to={`/`}
-              className="text-pink-600 dark:text-pink-400 hover:underline ml-1"
-            >
-              <ChevronLeft />
-            </Link>
+          <Link
+            to={`/`}
+            className="text-pink-600 dark:text-pink-400 hover:underline ml-1"
+          >
+            <ChevronLeft />
+          </Link>
+          <HybridTVHeader
+            show={show}
+            selectedSeason={selectedSeason}
             onSeasonChange={setSelectedSeason}
+            isFavorited={isFavorited}
             onToggleFavorite={toggleFavorite}
           />
         </div>
