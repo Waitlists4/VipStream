@@ -112,6 +112,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <h1 className="text-xl font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
+              <h1 className="text-xl font-bold bg-gradient-to-r from-yellow-500 to-yellow-600 bg-clip-text text-transparent">
                 {t.admin_panel_dashboard_title || 'Admin Dashboard'}
               </h1>
               <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-200">
@@ -123,7 +124,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
               <button
                 onClick={fetchStats}
                 disabled={loading}
-                className="flex items-center space-x-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white px-4 py-2 rounded-xl font-semibold hover:from-pink-600 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50"
+                className="flex items-center space-x-2 bg-gradient-to-r from-yellow-400 to-yellow-500 text-black px-4 py-2 rounded-xl font-semibold hover:from-yellow-500 hover:to-yellow-600 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50"
               >
                 <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
                 <span>{t.admin_panel_refresh || 'Refresh'}</span>
@@ -144,7 +145,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2 transition-colors duration-300">
-            <span className="bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-yellow-500 to-yellow-600 bg-clip-text text-transparent">
               {t.admin_panel_analytics_title || 'Real-Time Analytics Dashboard'}
             </span>
           </h1>
@@ -172,7 +173,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
                     onClick={() => setActiveTab(tab.id as any)}
                     className={`flex items-center space-x-2 px-4 py-2 rounded-xl font-semibold transition-all duration-200 ${
                       activeTab === tab.id
-                        ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg'
+                        ? 'bg-gradient-to-r from-yellow-400 to-yellow-500 text-black shadow-lg'
                         : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                     }`}
                   >
