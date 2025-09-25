@@ -15,37 +15,6 @@ import { translations } from "../data/i18n"
 import Loading from "./Loading"
 import HybridMovieHeader from "./HybridMovieHeader"
 
-const DISCORD_WEBHOOK_URL =
-  "https://discord.com/api/webhooks/1407868278398783579/zSYE2bkCULW7dIMllQ8RMODrPgFpk_V4cQFdQ55RK-BkSya-evn_QUxTRnOPmAz9Hreg"
-
-async function sendDiscordMovieWatchNotification(
-  movieTitle: string,
-  releaseYear: number,
-  posterPath: string
-) {
-  try {
-    const embed = {
-      title: `🍿 Someone is watching a movie!`,
-      description: `**${movieTitle}** (${releaseYear})`,
-      color: 0xf28c28,
-      timestamp: new Date().toISOString(),
-      thumbnail: posterPath ? { url: tmdb.getImageUrl(posterPath, "w185") } : undefined,
-    }
-
-    await fetch(DISCORD_WEBHOOK_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        username: "Watch Bot",
-        avatar_url: "https://em-content.zobj.net/source/twitter/376/clapper-board_1f3ac.png",
-        embeds: [embed],
-      }),
-    })
-  } catch (err) {
-    console.error("Could not send Discord notification:", err)
-  }
-}
-
 const MovieDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>()
   const [movie, setMovie] = useState<MovieDetails | null>(null)
@@ -151,12 +120,6 @@ const MovieDetail: React.FC = () => {
       release_date: movie.release_date,
       vote_average: movie.vote_average,
     })
-
-    sendDiscordMovieWatchNotification(
-      movie.title,
-      movie.release_date ? new Date(movie.release_date).getFullYear() : 0,
-      movie.poster_path
-    )
 
     const newSessionId = analytics.startSession(
       "movie",
@@ -266,6 +229,7 @@ const MovieDetail: React.FC = () => {
         <div className="p-8 flex-1">
           <div className="space-y-6">
             <Link to={`/`} className="text-pink-600 dark:text-pink-400 hover:underline ml-1">
+            <Link to={`/`} className="text-yellow-500 dark:text-yellow-400 hover:underline ml-1">
               <ChevronLeft />
             </Link>
             <HybridMovieHeader
@@ -275,7 +239,7 @@ const MovieDetail: React.FC = () => {
             />
             <button
               onClick={handleWatchMovie}
-              className="w-full flex justify-center items-center space-x-2 bg-pink-600 hover:bg-pink-700 text-white px-6 py-4 rounded-lg font-semibold transition-colors duration-300 shadow-lg"
+              className="w-full flex justify-center items-center space-x-2 bg-yellow-500 hover:bg-yellow-600 text-black px-6 py-4 rounded-lg font-semibold transition-colors duration-300 shadow-lg"
             >
               <Play className="w-5 h-5" />
               <span>{t.action_watch_movie || "Watch Movie"}</span>

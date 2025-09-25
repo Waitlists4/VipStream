@@ -169,6 +169,7 @@ const HomepageMobile: React.FC = () => {
 
         {/* Page Heading */}
         <h1 className="text-3xl font-bold text-center bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 bg-clip-text text-transparent">
+        <h1 className="text-3xl font-bold text-center bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 bg-clip-text text-transparent">
           {t.home_heading_title}
         </h1>
         <p className="text-center text-gray-900 dark:text-gray-200">{t.home_heading_subtitle}</p>

@@ -1,6 +1,6 @@
 import { filterBannedSearchResults, filterBannedContent } from '../utils/banList';
 
-const API_KEY = '762f9abeaf5a0a96795dee0bb3989df9';
+const API_KEY = 'a222e5eda9654d1c6974da834e756c12';
 const BASE_URL = 'https://api.themoviedb.org/3';
 
 export const tmdb = {

@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'watch.lunastream.app',
-  appName: 'LunaStream',
+  appId: 'watch.vipstream.app',
+  appName: 'VipStream',
   webDir: 'dist'
 };
 

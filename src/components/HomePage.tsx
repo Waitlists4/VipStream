@@ -134,7 +134,7 @@ const HomePage: React.FC = () => {
           {/* Heading */}
           <div className="text-center">
             <h1 className="text-3xl sm:text-4xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-6 transition-colors duration-300 px-4">
-              <span className="bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-yellow-500 via-yellow-600 to-yellow-700 bg-clip-text text-transparent">
                 {t.home_heading_title}
               </span>
             </h1>
@@ -146,8 +146,9 @@ const HomePage: React.FC = () => {
             <div className="max-w-2xl mx-auto relative px-4">
               <form onSubmit={handleSearch} className="relative">
                 <div className="relative bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-2xl shadow-xl border border-pink-200/50 dark:border-gray-700/50 transition-colors duration-300">
+                <div className="relative bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-2xl shadow-xl border border-yellow-200/50 dark:border-gray-700/50 transition-colors duration-300">
                   <div className="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none">
-                    <Search className="h-5 w-5 sm:h-6 sm:w-6 text-pink-400 dark:text-purple-400 transition-colors duration-300" />
+                    <Search className="h-5 w-5 sm:h-6 sm:w-6 text-yellow-400 dark:text-yellow-400 transition-colors duration-300" />
                   </div>
                   <input
                     type="text"
@@ -202,7 +203,7 @@ const HomePage: React.FC = () => {
                     className="block w-full pl-12 sm:pl-16 pr-4 sm:pr-6 py-4 sm:py-6 text-base sm:text-lg bg-transparent border-0 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white focus:ring-0 focus:outline-none transition-colors duration-300"
                   />
                   <button type="submit" className="absolute inset-y-0 right-0 flex items-center pr-2 sm:pr-6">
-                    <div className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-4 sm:px-8 py-2 sm:py-3 rounded-xl font-semibold hover:from-pink-600 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                    <div className="bg-gradient-to-r from-yellow-400 to-yellow-500 text-black px-4 sm:px-8 py-2 sm:py-3 rounded-xl font-semibold hover:from-yellow-500 hover:to-yellow-600 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
                       <span className="hidden sm:inline">{t.nav_search}</span>
                       <Search className="w-4 h-4 sm:hidden" />
                     </div>
@@ -221,7 +222,7 @@ const HomePage: React.FC = () => {
                         <div
                           key={`${item.title || item.name}-${item.id}`}
                           onClick={() => navigate(`/${item.media_type}/${item.id}`)}
-                          className="flex items-center p-4 hover:bg-pink-50 dark:hover:bg-gray-700/50 cursor-pointer transition-all duration-200 border-b border-gray-100 dark:border-gray-700/30 last:border-b-0"
+                          className="flex items-center p-4 hover:bg-yellow-50 dark:hover:bg-gray-700/50 cursor-pointer transition-all duration-200 border-b border-gray-100 dark:border-gray-700/30 last:border-b-0"
                         >
                           {/* Poster Image */}
                           <div className="flex-shrink-0 w-12 h-16 mr-4 rounded-lg overflow-hidden shadow-md">
@@ -249,11 +250,7 @@ const HomePage: React.FC = () => {
                                     </span>
                                   </div>
                                   <span
-                                    className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                                      isMovie
-                                        ? "bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-300"
-                                        : "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300"
-                                    }`}
+                                    className="text-xs px-2 py-0.5 rounded-full font-medium bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300"
                                   >
                                     {isMovie ? t.content_movie_singular : t.content_tv_singular}
                                   </span>
@@ -279,7 +276,7 @@ const HomePage: React.FC = () => {
                               <div className="flex-shrink-0 ml-3">
                                 <div className="w-2 h-8 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                                   <div
-                                    className="bg-gradient-to-t from-pink-500 to-purple-500 rounded-full transition-all duration-300"
+                                    className="bg-gradient-to-t from-yellow-400 to-yellow-500 rounded-full transition-all duration-300"
                                     style={{
                                       height: `${Math.min((item.popularity / 100) * 100, 100)}%`,
                                       width: "100%",
@@ -318,7 +315,7 @@ const HomePage: React.FC = () => {
             {/* Trending Movies */}
             <div className="mb-12">
               <h2 className="flex items-center mb-8 text-3xl font-bold text-gray-900 dark:text-white transition-colors duration-300">
-                <TrendingUp className="w-8 h-8 mr-3 text-pink-500" />
+                <TrendingUp className="w-8 h-8 mr-3 text-yellow-500" />
                 {t.content_trending} {t.content_movie_plural}
               </h2>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
@@ -326,7 +323,7 @@ const HomePage: React.FC = () => {
                   <Link
                     key={movie.id}
                     to={`/movie/${movie.id}`}
-                    className="group block bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-pink-200/50 dark:border-gray-700/50 overflow-hidden hover:shadow-2xl transition-all duration-300 hover:-translate-y-2"
+                    className="group block bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-yellow-200/50 dark:border-gray-700/50 overflow-hidden hover:shadow-2xl transition-all duration-300 hover:-translate-y-2"
                   >
                     <div className="aspect-[2/3] overflow-hidden">
                       <img
@@ -337,6 +334,7 @@ const HomePage: React.FC = () => {
                     </div>
                     <div className="p-4">
                       <h3 className="font-semibold text-gray-900 dark:text-white text-sm mb-2 line-clamp-2 group-hover:text-pink-600 dark:group-hover:text-pink-400 transition-colors">
+                      <h3 className="font-semibold text-gray-900 dark:text-white text-sm mb-2 line-clamp-2 group-hover:text-yellow-600 dark:group-hover:text-yellow-400 transition-colors">
                         {movie.title}
                       </h3>
                       <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
@@ -355,7 +353,7 @@ const HomePage: React.FC = () => {
             {/* Trending TV Shows */}
             <div>
               <h2 className="flex items-center mb-8 text-3xl font-bold text-gray-900 dark:text-white transition-colors duration-300">
-                <TrendingUp className="w-8 h-8 mr-3 text-purple-500" />
+                <TrendingUp className="w-8 h-8 mr-3 text-yellow-600" />
                 {t.content_trending} {t.content_tv_plural}
               </h2>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
@@ -363,7 +361,7 @@ const HomePage: React.FC = () => {
                   <Link
                     key={show.id}
                     to={`/tv/${show.id}`}
-                    className="group block bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-purple-200/50 dark:border-gray-700/50 overflow-hidden hover:shadow-2xl transition-all duration-300 hover:-translate-y-2"
+                    className="group block bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-yellow-200/50 dark:border-gray-700/50 overflow-hidden hover:shadow-2xl transition-all duration-300 hover:-translate-y-2"
                   >
                     <div className="aspect-[2/3] overflow-hidden">
                       <img
@@ -374,6 +372,7 @@ const HomePage: React.FC = () => {
                     </div>
                     <div className="p-4">
                       <h3 className="font-semibold text-gray-900 dark:text-white text-sm mb-2 line-clamp-2 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+                      <h3 className="font-semibold text-gray-900 dark:text-white text-sm mb-2 line-clamp-2 group-hover:text-yellow-600 dark:group-hover:text-yellow-400 transition-colors">
                         {show.name}
                       </h3>
                       <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">

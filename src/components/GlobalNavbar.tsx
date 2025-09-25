@@ -111,11 +111,11 @@ const GlobalNavbar: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="relative flex items-center h-16">
           <Link to="/" className="flex items-center space-x-2 group z-10">
-            <div className="w-8 h-8 bg-gradient-to-r from-pink-500 to-purple-600 rounded-lg flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow duration-200">
+            <div className="w-8 h-8 bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-lg flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow duration-200">
               <Film className="w-5 h-5 text-white" />
             </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
-              LunaStream
+            <span className="text-xl font-bold bg-gradient-to-r from-yellow-500 to-yellow-600 bg-clip-text text-transparent">
+              VipStream
             </span>
           </Link>
 
@@ -129,8 +129,8 @@ const GlobalNavbar: React.FC = () => {
                   to={item.path}
                   className={`flex items-center space-x-2 px-4 py-2 rounded-xl font-medium transition-all duration-200 ${
                     isActive(item.path)
-                      ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg'
-                      : 'text-gray-600 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700/50 hover:text-pink-600 dark:hover:text-pink-400'
+                      ? 'bg-gradient-to-r from-yellow-400 to-yellow-500 text-black shadow-lg'
+                      : 'text-gray-600 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700/50 hover:text-yellow-500 dark:hover:text-yellow-400'
                   }`}
                 >
                   <Icon className="w-4 h-4" />
@@ -150,8 +150,8 @@ const GlobalNavbar: React.FC = () => {
                   to={item.path}
                   className={`p-2 rounded-lg transition-all duration-200 ${
                     isActive(item.path)
-                      ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg'
-                      : 'text-gray-600 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700/50 hover:text-pink-600 dark:hover:text-pink-400'
+                      ? 'bg-gradient-to-r from-yellow-400 to-yellow-500 text-black shadow-lg'
+                      : 'text-gray-600 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700/50 hover:text-yellow-500 dark:hover:text-yellow-400'
                   }`}
                   title={item.label}
                 >
@@ -167,8 +167,8 @@ const GlobalNavbar: React.FC = () => {
               to="/donate"
               className={`flex items-center space-x-2 px-4 py-2 rounded-xl font-medium transition-all duration-200 ${
                 isActive('/donate')
-                  ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg'
-                  : 'text-pink-600 dark:text-pink-400 border border-transparent border-[1.5px] border-gradient-to-r from-pink-500 to-purple-600 hover:bg-pink-50/40 dark:hover:bg-gray-800'
+                  ? 'bg-gradient-to-r from-yellow-400 to-yellow-500 text-black shadow-lg'
+                  : 'text-yellow-500 dark:text-yellow-400 border border-transparent border-[1.5px] border-gradient-to-r from-yellow-400 to-yellow-500 hover:bg-yellow-50/40 dark:hover:bg-gray-800'
               }`}
             >
               <Heart className="w-4 h-4" />

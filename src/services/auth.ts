@@ -41,9 +41,9 @@ class AuthService {
       if (data.success) {
         // Store token in localStorage as backup
         if (data.token) {
-          localStorage.setItem('lunastream-admin-token', data.token);
+          localStorage.setItem('vipstream-admin-token', data.token);
         }
-        localStorage.setItem('lunastream-admin-auth', 'true');
+        localStorage.setItem('vipstream-admin-auth', 'true');
       }
 
       return data;
@@ -66,8 +66,8 @@ class AuthService {
       console.error('Logout error:', error);
     } finally {
       // Always clear local storage
-      localStorage.removeItem('lunastream-admin-auth');
-      localStorage.removeItem('lunastream-admin-token');
+      localStorage.removeItem('vipstream-admin-auth');
+      localStorage.removeItem('vipstream-admin-token');
     }
   }
 
@@ -77,7 +77,7 @@ class AuthService {
         method: 'GET',
         credentials: 'include',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('lunastream-admin-token')}`,
+          'Authorization': `Bearer ${localStorage.getItem('vipstream-admin-token')}`,
         },
       });
 
@@ -97,12 +97,12 @@ class AuthService {
   }
 
   isAuthenticated(): boolean {
-    return localStorage.getItem('lunastream-admin-auth') === 'true';
+    return localStorage.getItem('vipstream-admin-auth') === 'true';
   }
 
   private clearAuth(): void {
-    localStorage.removeItem('lunastream-admin-auth');
-    localStorage.removeItem('lunastream-admin-token');
+    localStorage.removeItem('vipstream-admin-auth');
+    localStorage.removeItem('vipstream-admin-token');
   }
 
   async getAdminData(): Promise<any> {
@@ -111,7 +111,7 @@ class AuthService {
         method: 'GET',
         credentials: 'include',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('lunastream-admin-token')}`,
+          'Authorization': `Bearer ${localStorage.getItem('vipstream-admin-token')}`,
         },
       });
 

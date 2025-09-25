@@ -75,11 +75,11 @@ const DonatePage: React.FC = () => {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Hero Section */}
         <div className={`text-center ${isMobile ? 'mb-8' : 'mb-12'}`}>
-          <div className="w-20 h-20 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl">
+          <div className="w-20 h-20 bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl">
             <Heart className="w-10 h-10 text-white" />
           </div>
           <h1 className={`font-bold text-gray-900 dark:text-white mb-6 transition-colors duration-300 ${isMobile ? 'text-2xl' : 'text-4xl sm:text-5xl'}`}>
-            <span className="bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-yellow-500 via-yellow-600 to-yellow-700 bg-clip-text text-transparent">
               {t.donate_support_title}
             </span>
           </h1>
@@ -97,17 +97,17 @@ const DonatePage: React.FC = () => {
           <div className={`grid gap-6 ${isMobile ? 'grid-cols-1 gap-4' : 'md:grid-cols-2'}`}>
             <div className="space-y-4">
               <div className="flex items-start space-x-3">
-                <div className="w-2 h-2 bg-pink-500 rounded-full mt-2 flex-shrink-0"></div>
+                <div className="w-2 h-2 bg-yellow-500 rounded-full mt-2 flex-shrink-0"></div>
                 <p className={`text-gray-700 dark:text-gray-300 transition-colors duration-300 ${isMobile ? 'text-sm' : ''}`}><strong>{t.donate_domain_costs}</strong> {t.donate_domain_costs_desc}</p>
               </div>
               <div className="flex items-start space-x-3">
-                <div className="w-2 h-2 bg-indigo-500 rounded-full mt-2 flex-shrink-0"></div>
+                <div className="w-2 h-2 bg-yellow-600 rounded-full mt-2 flex-shrink-0"></div>
                 <p className={`text-gray-700 dark:text-gray-300 transition-colors duration-300 ${isMobile ? 'text-sm' : ''}`}><strong>{t.donate_development}</strong> {t.donate_development_desc}</p>
               </div>
             </div>
             <div className={`space-y-4 ${isMobile ? 'mt-2' : ''}`}>
               <div className="flex items-start space-x-3">
-                <div className="w-2 h-2 bg-purple-500 rounded-full mt-2 flex-shrink-0"></div>
+                <div className="w-2 h-2 bg-yellow-700 rounded-full mt-2 flex-shrink-0"></div>
                 <p className={`text-gray-700 dark:text-gray-300 transition-colors duration-300 ${isMobile ? 'text-sm' : ''}`}><strong>{t.donate_accessibility}</strong> {t.donate_accessibility_desc}</p>
               </div>
             </div>
@@ -178,7 +178,7 @@ const DonatePage: React.FC = () => {
 
         {/* Thank You Message */}
         <div className={`text-center ${isMobile ? 'mt-6' : 'mt-12'}`}>
-          <div className={`bg-gradient-to-r from-pink-500 to-purple-600 text-white ${isMobile ? 'rounded-xl p-4' : 'rounded-2xl p-8'}`}>
+          <div className={`bg-gradient-to-r from-yellow-400 to-yellow-500 text-black ${isMobile ? 'rounded-xl p-4' : 'rounded-2xl p-8'}`}>
             <h3 className={`font-bold mb-4 ${isMobile ? 'text-lg' : 'text-2xl'}`}>{t.donate_thank_you_title}</h3>
             <p className={`opacity-90 max-w-2xl mx-auto ${isMobile ? 'text-sm' : 'text-lg'}`}>
               {t.donate_thank_you_message}

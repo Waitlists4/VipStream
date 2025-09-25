@@ -193,7 +193,7 @@ export const translations = {
     accessibility_join_telegram: 'Join our Telegram',
     
     // Admin Login
-    admin_login_title: 'LunaStream Admin',
+    admin_login_title: 'VipStream Admin',
     admin_login_subtitle: 'Access the analytics dashboard',
     admin_login_username_label: 'Username',
     admin_login_username_placeholder: 'Enter username',
@@ -476,7 +476,7 @@ export const translations = {
     accessibility_join_telegram: 'Tilslut dig vores Telegram',
     
     // Admin Login
-    admin_login_title: 'LunaStream Admin',
+    admin_login_title: 'VipStream Admin',
     admin_login_subtitle: 'Få adgang til analyse-dashboardet',
     admin_login_username_label: 'Brugernavn',
     admin_login_username_placeholder: 'Indtast brugernavn',

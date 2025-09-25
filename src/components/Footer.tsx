@@ -23,7 +23,7 @@ const Footer: React.FC = () => {
 
           {/* Email */}
           <a
-            href="mailto:admin@lunastream.watch"
+            href="mailto:admin@vipstream.watch"
             className="bg-[#EA4335] hover:bg-[#D33B2C] text-white p-3 rounded-lg shadow-md transition-all duration-200 transform hover:-translate-y-0.5 group"
             title={t.footer_email_us}
           >
@@ -61,7 +61,7 @@ const Footer: React.FC = () => {
 
           {/* TikTok */}
           <a
-            href="https://tiktok.com/@lunastream.watch"
+            href="https://tiktok.com/@vipstream.watch"
             target="_blank"
             rel="noopener noreferrer"
             className="bg-gray-900 hover:bg-gray-800 text-white p-3 rounded-lg shadow-md transition-all duration-200 transform hover:-translate-y-0.5 group"
@@ -96,7 +96,7 @@ const Footer: React.FC = () => {
 
           {/* Twitter */}
           <a
-            href="https://x.com/Lunastreamwatch"
+            href="https://x.com/Vipstreamwatch"
             target="_blank"
             rel="noopener noreferrer"
             className="bg-[#1DA1F2] hover:bg-[#1A91DA] text-white p-3 rounded-lg shadow-md transition-all duration-200 transform hover:-translate-y-0.5 group"
@@ -116,7 +116,7 @@ const Footer: React.FC = () => {
 
           {/* Telegram */}
           <a
-            href="https://t.me/lunastreaming"
+            href="https://t.me/vipstreaming"
             target="_blank"
             rel="noopener noreferrer"
             className="bg-[#0088CC] hover:bg-[#006699] text-white p-3 rounded-lg shadow-md transition-all duration-200 transform hover:-translate-y-0.5 group"
