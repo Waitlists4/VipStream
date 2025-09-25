@@ -56,10 +56,10 @@ const Vault: React.FC = () => {
     loadData();
     
     // Auto-import from recently viewed on first load
-    const hasImported = localStorage.getItem('vipstream-watchlist-imported');
+    const hasImported = localStorage.getItem('lunastream-watchlist-imported');
     if (!hasImported) {
       watchlistService.importFromRecentlyViewed();
-      localStorage.setItem('vipstream-watchlist-imported', 'true');
+      localStorage.setItem('lunastream-watchlist-imported', 'true');
       loadData(); // Reload after import
     }
   }, []);
@@ -282,7 +282,7 @@ const Vault: React.FC = () => {
 
                 {filteredItems.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-20">
-                    <div className="w-20 h-20 bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-full flex items-center justify-center mb-6 shadow-xl">
+                    <div className="w-20 h-20 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full flex items-center justify-center mb-6 shadow-xl">
                       <Play className="w-10 h-10 text-white" />
                     </div>
                     <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
@@ -297,7 +297,7 @@ const Vault: React.FC = () => {
                     {!searchTerm && (
                       <Link
                         to="/"
-                        className="flex items-center space-x-2 bg-gradient-to-r from-yellow-400 to-yellow-500 text-black px-6 py-3 rounded-xl font-semibold hover:from-yellow-500 hover:to-yellow-600 transition-all duration-200 shadow-lg hover:shadow-xl"
+                        className="flex items-center space-x-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-pink-600 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl"
                       >
                         <ArrowLeft className="w-4 h-4" />
                         <span>{t.vault_browse_content}</span>
@@ -329,7 +329,7 @@ const Vault: React.FC = () => {
                             </div>
                             
                             <div className="p-4">
-                              <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-sm mb-2 line-clamp-2 group-hover:text-yellow-600 dark:group-hover:text-yellow-400 transition-colors">
+                              <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-sm mb-2 line-clamp-2 group-hover:text-pink-600 dark:group-hover:text-pink-400 transition-colors">
                                 {title}
                               </h3>
                               
@@ -349,8 +349,8 @@ const Vault: React.FC = () => {
                                   {isMovie ? t.content_movie_singular : t.content_tv_singular}
                                 </span>
                                 <div className="flex items-center space-x-1">
-                                  <Play className="w-3 h-3 text-yellow-500" />
-                                  <span className="text-xs text-yellow-600 dark:text-yellow-400 font-medium">{t.action_watch}</span>
+                                  <Play className="w-3 h-3 text-pink-500" />
+                                  <span className="text-xs text-pink-600 dark:text-pink-400 font-medium">{t.action_watch}</span>
                                 </div>
                               </div>
                             </div>
@@ -395,7 +395,7 @@ const Vault: React.FC = () => {
 
                 {filteredFavorites.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-20">
-                    <div className="w-20 h-20 bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-full flex items-center justify-center mb-6 shadow-xl">
+                    <div className="w-20 h-20 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full flex items-center justify-center mb-6 shadow-xl">
                       <Heart className="w-10 h-10 text-white" />
                     </div>
                     <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
@@ -410,7 +410,7 @@ const Vault: React.FC = () => {
                     {!searchTerm && (
                       <Link
                         to="/"
-                        className="flex items-center space-x-2 bg-gradient-to-r from-yellow-400 to-yellow-500 text-black px-6 py-3 rounded-xl font-semibold hover:from-yellow-500 hover:to-yellow-600 transition-all duration-200 shadow-lg hover:shadow-xl"
+                        className="flex items-center space-x-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-pink-600 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl"
                       >
                         <ArrowLeft className="w-4 h-4" />
                         <span>{t.vault_browse_content}</span>
@@ -441,7 +441,7 @@ const Vault: React.FC = () => {
                             </div>
                             
                             <div className="p-4">
-                              <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-sm mb-2 line-clamp-2 group-hover:text-yellow-600 dark:group-hover:text-yellow-400 transition-colors">
+                              <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-sm mb-2 line-clamp-2 group-hover:text-pink-600 dark:group-hover:text-pink-400 transition-colors">
                                 {title}
                               </h3>
                               
@@ -461,8 +461,8 @@ const Vault: React.FC = () => {
                                   {isMovie ? t.content_movie_singular : t.content_tv_singular}
                                 </span>
                                 <div className="flex items-center space-x-1">
-                                  <Heart className="w-3 h-3 text-yellow-500 fill-current" />
-                                  <span className="text-xs text-yellow-600 dark:text-yellow-400 font-medium">{t.vault_favorite}</span>
+                                  <Heart className="w-3 h-3 text-pink-500 fill-current" />
+                                  <span className="text-xs text-pink-600 dark:text-pink-400 font-medium">{t.vault_favorite}</span>
                                 </div>
                               </div>
                             </div>
@@ -615,7 +615,7 @@ const Vault: React.FC = () => {
                 </div>
 
                 {/* Quick Actions */}
-                <div className="bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-2xl p-8 text-black">
+                <div className="bg-gradient-to-r from-pink-500 to-purple-600 rounded-2xl p-8 text-white">
                   <h3 className="text-2xl font-bold mb-4">{t.keep_building}</h3>
                   <p className="text-lg opacity-90 mb-6">
                     {t.keep_building_sub}
@@ -623,14 +623,14 @@ const Vault: React.FC = () => {
                   <div className="flex flex-col sm:flex-row gap-4">
                     <Link
                       to="/"
-                      className="inline-flex items-center gap-3 px-6 py-3 rounded-xl bg-black/20 hover:bg-black/30 transition-all text-black font-semibold"
+                      className="inline-flex items-center gap-3 px-6 py-3 rounded-xl bg-white/20 hover:bg-white/30 transition-all text-white font-semibold"
                     >
                       <TrendingUp className="w-5 h-5" />
                       {t.vault_browse_trending}
                     </Link>
                     <Link
                       to="/search"
-                      className="inline-flex items-center gap-3 px-6 py-3 rounded-xl bg-black/20 hover:bg-black/30 transition-all text-black font-semibold"
+                      className="inline-flex items-center gap-3 px-6 py-3 rounded-xl bg-white/20 hover:bg-white/30 transition-all text-white font-semibold"
                     >
                       <Search className="w-5 h-5" />
                       {t.search_content}

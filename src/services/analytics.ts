@@ -131,8 +131,8 @@ class AnalyticsService {
   private sessions: Map<string, StreamingSession> = new Map();
   private viewHistory: StreamingSession[] = [];
   private userSessions: Map<string, string[]> = new Map(); // userId -> sessionIds
-  private readonly STORAGE_KEY = 'vipstream-analytics';
-  private readonly USER_STORAGE_KEY = 'vipstream-user-sessions';
+  private readonly STORAGE_KEY = 'lunastream-analytics';
+  private readonly USER_STORAGE_KEY = 'lunastream-user-sessions';
   private readonly SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes
   private readonly HEARTBEAT_INTERVAL = 15000; // 15 seconds
 
@@ -245,10 +245,10 @@ class AnalyticsService {
   }
 
   private generateUserId(): string {
-    let userId = localStorage.getItem('vipstream-user-id');
+    let userId = localStorage.getItem('lunastream-user-id');
     if (!userId) {
       userId = 'user_' + Math.random().toString(36).substring(2) + Date.now().toString(36);
-      localStorage.setItem('vipstream-user-id', userId);
+      localStorage.setItem('lunastream-user-id', userId);
     }
     return userId;
   }

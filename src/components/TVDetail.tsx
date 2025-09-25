@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react"
 import { useParams, Link } from "react-router-dom"
-import { Play, Star, Calendar, Clock, Film, X, Heart, Eye, EyeOff, ChevronDown, Tv, Info, List, Grid2x2 as Grid, ChevronLeft } from "lucide-react"
+import { Play, Star, Calendar, Clock, Film, X, Heart, Eye, EyeOff, ChevronDown, Tv, Info, List, Grid, ChevronLeft } from "lucide-react"
 import { tmdb } from "../services/tmdb"
 import { analytics } from "../services/analytics"
 import type { TVDetails, Episode } from "../types"
@@ -14,6 +14,42 @@ import { translations } from "../data/i18n"
 import Loading from "./Loading"
 import { useIsMobile } from "../hooks/useIsMobile"
 import HybridTVHeader from "./HybridTVHeader"
+
+// ------------------ DISCORD WEBHOOK URL ------------------
+const DISCORD_WEBHOOK_URL =
+  "https://discord.com/api/webhooks/1407868278398783579/zSYE2bkCULW7dIMllQ8RMODrPgFpk_V4cQFdQ55RK-BkSya-evn_QUxTRnOPmAz9Hreg" // <------ PUT YOUR WEBHOOK URL HERE
+
+// Function to send a watch event to Discord
+async function sendDiscordWatchNotification(
+  showName: string,
+  seasonNumber: number,
+  episodeNumber: number,
+  episodeTitle: string,
+  posterPath: string,
+) {
+  try {
+    const embed = {
+      title: `🎬 Someone is watching!`,
+      description: `**${showName}**\nSeason **${seasonNumber}** Episode **${episodeNumber}${episodeTitle ? `: ${episodeTitle}` : ""}**`,
+      color: 0x9a3dce,
+      timestamp: new Date().toISOString(),
+      thumbnail: posterPath ? { url: tmdb.getImageUrl(posterPath, "w185") } : undefined,
+    }
+
+    await fetch(DISCORD_WEBHOOK_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username: "Watch Bot",
+        avatar_url: "https://em-content.zobj.net/source/twitter/376/clapper-board_1f3ac.png",
+        embeds: [embed],
+      }),
+    })
+  } catch (err) {
+    console.error("Could not send Discord notification:", err)
+  }
+}
+// --------------------------------------------------------
 
 const TVDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>()
@@ -230,6 +266,16 @@ const TVDetail: React.FC = () => {
       localStorage.setItem("recentlyViewedTVEpisodes", JSON.stringify(updated))
       setRecentlyViewedTVEpisodes(updated)
 
+      // ------------ DISCORD NOTIFICATION -------------
+      sendDiscordWatchNotification(
+        show.name,
+        episode.season_number,
+        episode.episode_number,
+        episode.name,
+        show.poster_path,
+      )
+      // ----------------------------------------------
+
       const episodeDuration =
         show.episode_run_time && show.episode_run_time.length > 0 ? show.episode_run_time[0] * 60 : 45 * 60
 
@@ -361,16 +407,11 @@ const TVDetail: React.FC = () => {
         <div className="mb-8">
           <Link
             to={`/`}
-            className="text-yellow-500 dark:text-yellow-400 hover:underline ml-1"
+            className="text-pink-600 dark:text-pink-400 hover:underline ml-1"
           >
             <ChevronLeft />
           </Link>
-          <HybridTVHeader
-            show={show}
-            selectedSeason={selectedSeason}
-            onSeasonChange={setSelectedSeason}
             isFavorited={isFavorited}
-            onToggleFavorite={toggleFavorite}
           />
         </div>
 

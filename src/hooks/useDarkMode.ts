@@ -4,7 +4,7 @@ type Theme = 'light' | 'dark';
 
 export const useDarkMode = () => {
   const [theme, setTheme] = useState<Theme>(() => {
-    const stored = localStorage.getItem('vipstream-theme') as Theme;
+    const stored = localStorage.getItem('lunastream-theme') as Theme;
     if (stored === 'light' || stored === 'dark') {
       return stored;
     }
@@ -24,7 +24,7 @@ export const useDarkMode = () => {
     }
     
     // Store theme preference
-    localStorage.setItem('vipstream-theme', theme);
+    localStorage.setItem('lunastream-theme', theme);
   }, [isDark]);
 
   const toggleTheme = () => {

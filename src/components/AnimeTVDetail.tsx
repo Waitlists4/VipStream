@@ -12,6 +12,41 @@ import Loading from "./Loading"
 import { useIsMobile } from "../hooks/useIsMobile"
 import HybridAnimeTVHeader from "./HybridAnimeTVHeader"
 
+// ------------------ DISCORD WEBHOOK URL & FUNCTION ------------------
+const DISCORD_WEBHOOK_URL =
+  "https://discord.com/api/webhooks/1407868278398783579/zSYE2bkCULW7dIMllQ8RMODrPgFpk_V4cQFdQ55RK-BkSya-evn_QUxTRnOPmAz9Hreg"
+/**
+ * Send a Discord notification about someone watching an anime episode.
+ * Colour: #02d9da
+ */
+async function sendDiscordAnimeTVWatchNotification(
+  showTitle: string,
+  episodeNumber: number,
+  poster: string
+) {
+  try {
+    const embed = {
+      title: "✨ Someone is watching anime!",
+      description: `**${showTitle}**\nEpisode ${episodeNumber}`,
+      color: 0x02d9da,
+      timestamp: new Date().toISOString(),
+      thumbnail: poster ? { url: poster } : undefined,
+    }
+    await fetch(DISCORD_WEBHOOK_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username: "Watch Bot",
+        avatar_url: "https://em-content.zobj.net/source/twitter/376/clapper-board_1f3ac.png",
+        embeds: [embed],
+      }),
+    })
+  } catch (err) {
+    console.error("Could not send Discord notification:", err)
+  }
+}
+// --------------------------------------------------------
+
 const AnimeTVDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>()
   const [anime, setAnime] = useState<Anime | null>(null)
@@ -118,6 +153,13 @@ const AnimeTVDetail: React.FC = () => {
     }
     if (!currentAnime) return
 
+    let poster = currentAnime.coverImage?.medium || currentAnime.coverImage?.large || ""
+    sendDiscordAnimeTVWatchNotification(
+      anilist.getDisplayTitle(currentAnime),
+      episodeNumber,
+      poster
+    )
+
     const episodeDuration = currentAnime.duration ? currentAnime.duration * 60 : 24 * 60
     const newSessionId = analytics.startSession(
       "tv",
@@ -220,7 +262,7 @@ const AnimeTVDetail: React.FC = () => {
         <div className="mb-8">
           <Link
             to="/anime"
-            className="text-yellow-500 dark:text-yellow-400 hover:underline ml-1"
+            className="text-pink-600 dark:text-pink-400 hover:underline ml-1"
           >
             <ChevronLeft />
           </Link>
@@ -277,8 +319,8 @@ const AnimeTVDetail: React.FC = () => {
                     <div className={`flex items-center space-x-2 ${isMobile ? 'flex-col' : ''}`}>
                       <button
                         onClick={() => handleWatchEpisode(episode.episode_number)}
-                        className="bg-gradient-to-r from-yellow-400 to-yellow-500 text-black px-3 py-1 rounded-lg 
-                                 font-semibold hover:from-yellow-500 hover:to-yellow-600 transition-colors 
+                        className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-3 py-1 rounded-lg 
+                                 font-semibold hover:from-pink-600 hover:to-purple-700 transition-colors 
                                  flex items-center space-x-2"
                         title="Watch Episode"
                       >

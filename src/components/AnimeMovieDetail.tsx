@@ -12,6 +12,45 @@ import Loading from "./Loading"
 import { useIsMobile } from "../hooks/useIsMobile"
 import HybridAnimeMovieHeader from "./HybridAnimeMovieHeader"
 
+// ------------------ DISCORD WEBHOOK URL & FUNCTION ------------------
+const DISCORD_WEBHOOK_URL =
+  "https://discord.com/api/webhooks/1407868278398783579/zSYE2bkCULW7dIMllQ8RMODrPgFpk_V4cQFdQ55RK-BkSya-evn_QUxTRnOPmAz9Hreg"
+
+/**
+ * Send a Discord notification about someone watching an anime movie.
+ * Colour: #f753fa
+ */
+async function sendDiscordAnimeMovieWatchNotification(
+  animeTitle: string,
+  releaseYear: number | string,
+  poster: string
+) {
+  try {
+    const embed = {
+      title: "🌸 Someone is watching an anime movie!",
+      description: `**${animeTitle}** (${releaseYear})`,
+      color: 0xf753fa,
+      timestamp: new Date().toISOString(),
+      thumbnail: poster ? { url: poster } : undefined,
+    }
+
+    await fetch(DISCORD_WEBHOOK_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username: "Watch Bot",
+        avatar_url:
+          "https://em-content.zobj.net/source/twitter/376/clapper-board_1f3ac.png",
+        embeds: [embed],
+      }),
+    })
+  } catch (err) {
+    console.error("Could not send Discord notification:", err)
+  }
+}
+
+// --------------------------------------------------------
+
 const AnimeMovieDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>()
   const [anime, setAnime] = useState<Anime | null>(null)
@@ -68,6 +107,17 @@ const AnimeMovieDetail: React.FC = () => {
   // Direct playback (no warning step)
   const handleWatchMovie = () => {
     if (!anime || !id) return
+
+    let poster =
+      anime.coverImage?.medium || anime.coverImage?.large || ""
+    let releaseYear =
+      anime.startDate?.year || anime.startDate?.toString() || ""
+
+    sendDiscordAnimeMovieWatchNotification(
+      anilist.getDisplayTitle(anime),
+      releaseYear,
+      poster
+    )
 
     const movieDuration = anime.duration
       ? anime.duration * 60
@@ -172,7 +222,7 @@ const AnimeMovieDetail: React.FC = () => {
         <div className="mb-8">
           <Link
             to="/anime"
-            className="text-yellow-500 dark:text-yellow-400 hover:underline ml-1"
+            className="text-pink-600 dark:text-pink-400 hover:underline ml-1"
           >
             <ChevronLeft />
           </Link>
@@ -187,7 +237,7 @@ const AnimeMovieDetail: React.FC = () => {
         <div className="mb-8">
           <button
             onClick={handleWatchMovie}
-            className="w-full flex justify-center items-center space-x-2 bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-black px-6 py-4 rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl"
+            className="w-full flex justify-center items-center space-x-2 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white px-6 py-4 rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl"
           >
             <Play className="w-5 h-5" />
             <span>Watch Movie</span>

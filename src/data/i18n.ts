@@ -193,7 +193,7 @@ export const translations = {
     accessibility_join_telegram: 'Join our Telegram',
     
     // Admin Login
-    admin_login_title: 'VipStream Admin',
+    admin_login_title: 'LunaStream Admin',
     admin_login_subtitle: 'Access the analytics dashboard',
     admin_login_username_label: 'Username',
     admin_login_username_placeholder: 'Enter username',
@@ -252,8 +252,8 @@ export const translations = {
     show_not_found: 'Show not found',
     
     // Donate Page
-    donate_support_title: 'Support VipStream',
-    donate_support_subtitle: 'Help us keep VipStream free and available for everyone. Your donations directly support our website to provide the best streaming experience.',
+    donate_support_title: 'Support LunaStream',
+    donate_support_subtitle: 'Help us keep LunaStream free and available for everyone. Your donations directly support our website to provide the best streaming experience.',
     donate_how_help_title: 'How Your Donations Help',
     donate_domain_costs: 'Domain Costs:',
     donate_domain_costs_desc: 'Domain renewal and alternative domains if possible.',
@@ -266,7 +266,7 @@ export const translations = {
     donate_copy_address: 'Copy Address',
     donate_copied: 'Copied!',
     donate_thank_you_title: 'Thank You for Your Support! 💜',
-    donate_thank_you_message: 'Every donation, no matter the size, makes a real difference in keeping VipStream running and improving. We\'re grateful for your contribution to our community!',
+    donate_thank_you_message: 'Every donation, no matter the size, makes a real difference in keeping LunaStream running and improving. We\'re grateful for your contribution to our community!',
     
     // Coming Soon Page
     coming_soon_loading: 'Loading...',
@@ -276,7 +276,7 @@ export const translations = {
     coming_soon_next: 'Next',
     
     // Version Page
-    version_build_info: 'Real-time build and deployment information for VipStream',
+    version_build_info: 'Real-time build and deployment information for LunaStream',
     
     // Footer
     footer_email_us: 'Email us',
@@ -476,7 +476,7 @@ export const translations = {
     accessibility_join_telegram: 'Tilslut dig vores Telegram',
     
     // Admin Login
-    admin_login_title: 'VipStream Admin',
+    admin_login_title: 'LunaStream Admin',
     admin_login_subtitle: 'Få adgang til analyse-dashboardet',
     admin_login_username_label: 'Brugernavn',
     admin_login_username_placeholder: 'Indtast brugernavn',
@@ -535,8 +535,8 @@ export const translations = {
     show_not_found: 'Serie ikke fundet',
     
     // Donate Page
-    donate_support_title: 'Støt VipStream',
-    donate_support_subtitle: 'Hjælp os med at holde VipStream gratis og tilgængelig for alle. Dine donationer støtter direkte vores hjemmeside til at levere den bedste streamingoplevelse.',
+    donate_support_title: 'Støt LunaStream',
+    donate_support_subtitle: 'Hjælp os med at holde LunaStream gratis og tilgængelig for alle. Dine donationer støtter direkte vores hjemmeside til at levere den bedste streamingoplevelse.',
     donate_how_help_title: 'Hvordan dine donationer hjælper',
     donate_domain_costs: 'Domæneomkostninger:',
     donate_domain_costs_desc: 'Domænefornyelse og alternative domæner hvis muligt.',
@@ -549,7 +549,7 @@ export const translations = {
     donate_copy_address: 'Kopier adresse',
     donate_copied: 'Kopieret!',
     donate_thank_you_title: 'Tak for din støtte! 💜',
-    donate_thank_you_message: 'Hver donation, uanset størrelse, gør en reel forskel i at holde VipStream kørende og forbedre. Vi er taknemmelige for dit bidrag til vores fællesskab!',
+    donate_thank_you_message: 'Hver donation, uanset størrelse, gør en reel forskel i at holde LunaStream kørende og forbedre. Vi er taknemmelige for dit bidrag til vores fællesskab!',
     
     // Coming Soon Page
     coming_soon_loading: 'Indlæser...',
@@ -559,7 +559,7 @@ export const translations = {
     coming_soon_next: 'Næste',
     
     // Version Page
-    version_build_info: 'Realtids build- og deployment-information for VipStream',
+    version_build_info: 'Realtids build- og deployment-information for LunaStream',
     
     // Footer
     footer_email_us: 'Skriv til os',

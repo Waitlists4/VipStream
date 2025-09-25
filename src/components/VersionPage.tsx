@@ -120,7 +120,7 @@ const VersionPage: React.FC = () => {
             <Code className="w-10 h-10 text-white" />
           </div>
           <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white mb-6 transition-colors duration-300">
-            <span className="bg-gradient-to-r from-yellow-500 via-yellow-600 to-yellow-700 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
               Version Information
             </span>
           </h1>
@@ -181,7 +181,7 @@ const VersionPage: React.FC = () => {
         {/* Loading State */}
         {loading && (
           <div className="flex justify-center items-center my-12">
-            <RefreshCw className="w-10 h-10 text-yellow-500 animate-spin" />
+            <RefreshCw className="w-10 h-10 text-pink-600 animate-spin" />
           </div>
         )}
 
@@ -195,23 +195,23 @@ const VersionPage: React.FC = () => {
               </h2>
               <ul className="space-y-3 text-gray-700 dark:text-gray-300">
                 <li className="flex items-center space-x-2">
-                  <GitBranch className="w-5 h-5 text-yellow-500 dark:text-yellow-400" />
+                  <GitBranch className="w-5 h-5 text-pink-600 dark:text-pink-400" />
                   <span>Default Branch: <strong>{repoInfo.default_branch}</strong></span>
                 </li>
                 <li className="flex items-center space-x-2">
-                  <User className="w-5 h-5 text-yellow-600 dark:text-yellow-500" />
+                  <User className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                   <span>Owner: <strong>{repoInfo.owner.login}</strong></span>
                 </li>
                 <li className="flex items-center space-x-2">
-                  <Calendar className="w-5 h-5 text-yellow-700 dark:text-yellow-600" />
+                  <Calendar className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
                   <span>Created At: <strong>{formatDate(new Date(repoInfo.created_at))}</strong></span>
                 </li>
                 <li className="flex items-center space-x-2">
-                  <Clock className="w-5 h-5 text-yellow-500 dark:text-yellow-400" />
+                  <Clock className="w-5 h-5 text-pink-600 dark:text-pink-400" />
                   <span>Last Updated: <strong>{formatDate(new Date(repoInfo.updated_at))}</strong></span>
                 </li>
                 <li className="flex items-center space-x-2">
-                  <ExternalLink className="w-5 h-5 text-yellow-600 dark:text-yellow-500" />
+                  <ExternalLink className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                   <a
                     href={repoInfo.html_url}
                     target="_blank"
@@ -231,19 +231,19 @@ const VersionPage: React.FC = () => {
               </h2>
               <ul className="space-y-3 text-gray-700 dark:text-gray-300">
                 <li className="flex items-center space-x-2">
-                  <Code className="w-5 h-5 text-yellow-500 dark:text-yellow-400" />
+                  <Code className="w-5 h-5 text-pink-600 dark:text-pink-400" />
                   <span>SHA: <code>{commitInfo.sha}</code></span>
                 </li>
                 <li className="flex items-center space-x-2">
-                  <User className="w-5 h-5 text-yellow-600 dark:text-yellow-500" />
+                  <User className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                   <span>Author: <strong>{commitInfo.commit.author.name}</strong></span>
                 </li>
                 <li className="flex items-center space-x-2">
-                  <Calendar className="w-5 h-5 text-yellow-700 dark:text-yellow-600" />
+                  <Calendar className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
                   <span>Date: <strong>{formatDate(new Date(commitInfo.commit.author.date))}</strong></span>
                 </li>
                 <li className="flex items-center space-x-2">
-                  <Info className="w-5 h-5 text-yellow-500 dark:text-yellow-400" />
+                  <Info className="w-5 h-5 text-pink-600 dark:text-pink-400" />
                   <span>Message: {commitInfo.commit.message}</span>
                 </li>
                 <li>
@@ -251,7 +251,7 @@ const VersionPage: React.FC = () => {
                     href={commitInfo.html_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-block mt-3 text-yellow-500 dark:text-yellow-400 hover:underline"
+                    className="inline-block mt-3 text-pink-600 dark:text-pink-400 hover:underline"
                   >
                     View Commit on GitHub
                   </a>

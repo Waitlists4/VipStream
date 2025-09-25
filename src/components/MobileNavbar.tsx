@@ -33,11 +33,11 @@ const MobileNavbar: React.FC = () => {
       <div className="flex items-center justify-between px-4 py-3">
         {/* Vertically centered by flex and minHeight */}
         <Link to="/" className="flex items-center space-x-2">
-          <div className="w-8 h-8 bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-lg flex items-center justify-center shadow-lg">
+          <div className="w-8 h-8 bg-gradient-to-r from-pink-500 to-purple-600 rounded-lg flex items-center justify-center shadow-lg">
             <Film className="w-5 h-5 text-white" />
           </div>
-          <span className="text-xl font-bold bg-gradient-to-r from-yellow-500 to-yellow-600 bg-clip-text text-transparent">
-            VipStream
+          <span className="text-xl font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
+            LunaStream
           </span>
         </Link>
         
@@ -62,7 +62,7 @@ const MobileNavbar: React.FC = () => {
               onClick={() => setMenuOpen(false)}
               className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
                 isActive(path)
-                  ? "bg-gradient-to-r from-yellow-400 to-yellow-500 text-black"
+                  ? "bg-gradient-to-r from-pink-500 to-purple-600 text-white"
                   : "text-gray-700 dark:text-white hover:bg-pink-50 dark:hover:bg-gray-800/50"
               }`}
             >
@@ -77,8 +77,8 @@ const MobileNavbar: React.FC = () => {
             onClick={() => setMenuOpen(false)}
             className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
               isActive('/donate')
-                ? "bg-gradient-to-r from-yellow-400 to-yellow-500 text-black"
-                : "text-yellow-500 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-700 hover:bg-yellow-50 dark:hover:bg-yellow-900/20"
+                ? "bg-gradient-to-r from-pink-500 to-purple-600 text-white"
+                : "text-pink-600 dark:text-pink-400 border border-pink-200 dark:border-pink-700 hover:bg-pink-50 dark:hover:bg-pink-900/20"
             }`}
           >
             <Heart className="w-5 h-5" />
@@ -97,7 +97,7 @@ const MobileNavbar: React.FC = () => {
                   onClick={() => handleLanguageChange(shortname)}
                   className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-200 ${
                     language === shortname
-                      ? "bg-gradient-to-r from-yellow-400 to-yellow-500 text-black"
+                      ? "bg-gradient-to-r from-pink-500 to-purple-600 text-white"
                       : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-gray-700"
                   }`}
                 >
