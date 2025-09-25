@@ -32,8 +32,8 @@ export interface WatchlistTVGroup {
 }
 
 class WatchlistService {
-  private readonly MOVIES_KEY = 'lunastream-watchlist-movies';
-  private readonly TV_KEY = 'lunastream-watchlist-tv';
+  private readonly MOVIES_KEY = 'vipstream-watchlist-movies';
+  private readonly TV_KEY = 'vipstream-watchlist-tv';
   private readonly RECENTLY_VIEWED_MOVIES_KEY = 'recentlyViewedMovies';
   private readonly RECENTLY_VIEWED_TV_KEY = 'recentlyViewedTVEpisodes';
 
